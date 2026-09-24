@@ -50,7 +50,12 @@ button, input, select { font: inherit; color: inherit; }
 .topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
 .topo h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.01em; }
 .topo p { margin: 4px 0 0; color: var(--tinta-2); }
-.topo .atualizado { font-size: 14px; }
+.topo .atualizado { font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+.botao-mini { display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px 3px 9px; border: 1px solid var(--linha); border-radius: 999px;
+  background: var(--superficie); color: var(--tinta); font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.4; }
+.botao-mini:hover { border-color: var(--tinta-2); background: #EEF1F6; }
+.botao-mini svg { width: 13px; height: 13px; }
+.botao-mini[hidden] { display: none; }
 .botao {
   background: var(--tinta); color: #fff; border: 0; border-radius: 10px;
   padding: 12px 20px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 10px; align-items: center;
@@ -211,6 +216,7 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
 .fonte-nome { font-weight: 600; line-height: 1.25; }
 .fonte-nome small { display: block; font-weight: 400; font-size: 13px; color: var(--tinta-2); }
 .fonte-nome .miudo { font-size: 11px; line-height: 1.3; margin-top: 2px; }
+.fonte-nome .nota-fonte { display: block; font-style: italic; }
 .fonte-barra { position: relative; height: 22px; }
 .fonte-disp { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
   background: repeating-linear-gradient(135deg, #EEF1F5 0 6px, #E0E5EC 6px 12px); }
@@ -308,7 +314,8 @@ details.detalhes .rolagem { margin-top: 10px; }
     <div>
       <h1>Avança Uberlândia</h1>
       <p class="subtitulo">Acompanhamento semanal das obras e projetos do programa</p>
-      <p class="atualizado" id="atualizado"></p>
+      <p class="atualizado"><span id="atualizado"></span><a class="botao-mini" id="atualizar-agora" target="_blank" rel="noopener" hidden
+        title="Abre o GitHub para rodar a atualização (só para quem tem acesso ao repositório)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Atualizar agora</a></p>
     </div>
     <div class="acoes-relatorio">
       <span>Relatório semanal</span>
@@ -357,7 +364,7 @@ details.detalhes .rolagem { margin-top: 10px; }
       <summary>Ver valores por fase</summary>
       <div class="rolagem"><table class="tabela-fontes" id="tabela-fontes"></table></div>
     </details>
-    <p class="nota">Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, até que o Notion registre a divisão real.</p>
+    <p class="nota">Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, até que a divisão real seja apontada.</p>
   </section>
 
   <section class="painel" id="secao-objetos" aria-labelledby="t-objetos">
@@ -379,7 +386,7 @@ details.detalhes .rolagem { margin-top: 10px; }
       <li>Contratado é o valor original do contrato. Os aditivos aparecem como um item à parte em cada fase.</li>
       <li>Em licitação e em planejamento usam o valor estimado.</li>
       <li>O total do programa é o valor anunciado pela Prefeitura.</li>
-      <li>Dotações do Notion que não estão entre as fontes oficiais aparecem como "Outros".</li>
+      <li>Dotações que não estão entre as fontes oficiais aparecem como "Outros".</li>
     </ul>
   </footer>
 </div>
@@ -393,7 +400,7 @@ details.detalhes .rolagem { margin-top: 10px; }
 /* =====================================================================
    DADOS E CONFIGURAÇÃO
    O GitHub Actions preenche os dois marcadores abaixo sempre que monta o
-   site: CONFIG vem do config.json e DADOS vem das bases do Notion.
+   site: CONFIG vem do config.json e DADOS vem das bases de dados.
    (As regras de fonte de recurso e de eixo temático ficam no script
    scripts/atualizar_dados.py e no config.json.)
    ===================================================================== */
@@ -406,7 +413,7 @@ if (!CONFIG || !DADOS) {
 }
 
 /* ============ Fontes, total e eixos (do config.json) ============ */
-const FONTES_OFICIAIS = CONFIG.fontes.map(f => ({ nome: f.nome, disponivel: f.disponivel, obs: f.detalhe }));
+const FONTES_OFICIAIS = CONFIG.fontes.map(f => ({ nome: f.nome, disponivel: f.disponivel, obs: f.detalhe, nota: f.nota }));
 const OUTROS = 'Outros', NAO_INFORMADA = 'Não informada';
 const TOTAL_PROGRAMA = CONFIG.total_do_programa;
 const EIXOS = CONFIG.eixos.includes(OUTROS) ? CONFIG.eixos : [...CONFIG.eixos, OUTROS];
@@ -480,8 +487,44 @@ const contar = lista => lista.filter(o => !o.sintetico).length;
 const ordenarPorValor = lista => lista.slice().sort((a, b) => (a.sintetico || 0) - (b.sintetico || 0) || b.valor - a.valor);
 
 /* ============ Cabeçalho ============ */
-document.getElementById('atualizado').textContent = 'Dados do Notion atualizados em ' + data(DADOS.atualizadoEm)
-  + (DADOS.atualizadoHora ? ' às ' + DADOS.atualizadoHora : '');
+function textoAtualizado() {
+  return 'Painel atualizado em ' + data(DADOS.atualizadoEm) + (DADOS.atualizadoHora ? ' às ' + DADOS.atualizadoHora : '');
+}
+document.getElementById('atualizado').textContent = textoAtualizado();
+
+/* ============ Botão "Atualizar agora" ============
+   Abre no GitHub a página da atualização, onde "Run workflow" busca os dados de novo.
+   Enquanto isso, esta página confere a cada 20 segundos se a versão nova já está no ar
+   e recarrega sozinha quando estiver. */
+function mostrarAviso(texto, ms = 6000) {
+  const aviso = document.getElementById('toast');
+  aviso.textContent = texto;
+  aviso.classList.add('visivel');
+  clearTimeout(mostrarAviso.timer);
+  mostrarAviso.timer = setTimeout(() => aviso.classList.remove('visivel'), ms);
+}
+function esperarVersaoNova() {
+  if (esperarVersaoNova.ativo) return;
+  esperarVersaoNova.ativo = true;
+  const versaoAtual = DADOS.atualizadoEm + ' ' + DADOS.atualizadoHora, inicio = Date.now();
+  const conferir = setInterval(async () => {
+    if (Date.now() - inicio > 10 * 60 * 1000) { clearInterval(conferir); esperarVersaoNova.ativo = false; return; }
+    try {
+      const html = await (await fetch(location.pathname + '?versao=' + Date.now(), { cache: 'no-store' })).text();
+      const m = html.match(/"atualizadoEm":"([^"]+)","atualizadoHora":"([^"]+)"/);
+      if (m && m[1] + ' ' + m[2] !== versaoAtual) { clearInterval(conferir); location.reload(); }
+    } catch (e) { /* sem conexão agora: tenta de novo na próxima volta */ }
+  }, 20000);
+}
+if (CONFIG.repositorio && CONFIG.botao_atualizar_agora !== false) {
+  const botao = document.getElementById('atualizar-agora');
+  botao.href = `https://github.com/${CONFIG.repositorio}/actions/workflows/atualizar.yml`;
+  botao.hidden = false;
+  botao.addEventListener('click', () => {
+    mostrarAviso('No GitHub, clique em "Run workflow" e confirme. Esta página recarrega sozinha quando o painel novo estiver no ar (1 a 3 minutos).', 10000);
+    esperarVersaoNova();
+  });
+}
 document.getElementById('valor-programa').textContent = 'R$ ' + dec(TOTAL_PROGRAMA / 1e9, 2) + ' bilhões';
 
 /* ============ Régua do programa (usada na tela e no PDF) ============ */
@@ -515,7 +558,7 @@ function montarRegua() {
   const detalhado = soma(objetos);
   document.getElementById('regua-resumo').innerHTML =
     `<strong>${obras.length} objetos</strong> cadastrados somam <strong>${reais(detalhado)}</strong>, ` +
-    `ou ${pct(detalhado, TOTAL_PROGRAMA)} do programa. O restante ainda não foi detalhado em objetos no Notion.`;
+    `ou ${pct(detalhado, TOTAL_PROGRAMA)} do programa. O restante ainda não foi detalhado em objetos.`;
   const alvo = document.getElementById('regua');
   alvo.innerHTML = htmlRegua(true);
   // anima a régua uma única vez, ao abrir a página
@@ -557,20 +600,19 @@ function montarStatus() {
   document.querySelectorAll('#rosca-status li').forEach(li => li.style.gridTemplateColumns = '12px 1fr auto 96px');
 }
 
-/* ============ Próximas entregas (término previsto em até 90 dias) ============ */
+/* ============ Próximas entregas (término previsto até o fim de dezembro) ============ */
+// Obras em andamento com término previsto de hoje até 31 de dezembro do ano corrente (todas, sem limite)
 function entregasPrevistas() {
   const hoje = DADOS.atualizadoEm;
-  const limite = new Date(hoje + 'T12:00:00'); limite.setDate(limite.getDate() + 90);
-  const fim = limite.toISOString().slice(0, 10);
+  const fim = hoje.slice(0, 4) + '-12-31';
   return { fim, lista: porFase('andamento').filter(o => !o.sintetico && o.termino && o.termino >= hoje && o.termino <= fim)
     .sort((a, b) => a.termino.localeCompare(b.termino) || a.nome.localeCompare(b.nome)) };
 }
 function montarEntregas() {
   const { fim, lista } = entregasPrevistas();
   document.getElementById('entregas').innerHTML = `<h3>Entregas previstas até ${mesAno(fim)}</h3>` + (lista.length
-    ? `<ul>${lista.slice(0, 6).map(o => `<li><span>${esc(o.nome)}${o.avanco != null ? `<small>${dec(o.avanco, o.avanco % 1 ? 1 : 0)}% executado</small>` : ''}</span><span class="situacao">${mesAno(o.termino)}</span></li>`).join('')}</ul>`
-      + (lista.length > 6 ? `<p class="nota">E mais ${lista.length - 6} na tabela abaixo.</p>` : '')
-    : '<p class="nota">Nenhuma obra com término previsto nos próximos 90 dias.</p>');
+    ? `<ul>${lista.map(o => `<li><span>${esc(o.nome)}${o.avanco != null ? `<small>${dec(o.avanco, o.avanco % 1 ? 1 : 0)}% executado</small>` : ''}</span><span class="situacao">${mesAno(o.termino)}</span></li>`).join('')}</ul>`
+    : `<p class="nota">Nenhuma obra com término previsto até ${mesAno(fim)}.</p>`);
 }
 
 /* ============ Barras por eixo temático (tela e PDF) ============ */
@@ -584,7 +626,7 @@ function resumoEixos() {
   return Object.values(eixos).sort((a, b) => (a.nome === 'Outros') - (b.nome === 'Outros') || b.total - a.total);
 }
 function htmlEixos() {
-  const lista = resumoEixos();
+  const lista = resumoEixos().filter(e => e.qtd > 0 || e.total > 0);   // eixo sem objeto não aparece no gráfico
   const maior = Math.max(...lista.map(e => e.total), 1);
   return chavesFases() + lista.map(e => `
     <div class="eixo">
@@ -598,7 +640,7 @@ function htmlEixos() {
 function resumoFontes() {
   const linhas = {};
   const linha = nome => linhas[nome] ??= { nome, disponivel: null, concluida: 0, andamento: 0, licitacao: 0, planejamento: 0, outros: new Set() };
-  FONTES_OFICIAIS.forEach(f => Object.assign(linha(f.nome), { disponivel: f.disponivel, obs: f.obs, oficial: true }));
+  FONTES_OFICIAIS.forEach(f => Object.assign(linha(f.nome), { disponivel: f.disponivel, obs: f.obs, nota: f.nota, oficial: true }));
   linha(OUTROS); linha(NAO_INFORMADA);
   objetos.forEach(o => o.partes.forEach(p => {
     linha(p.fonte)[o.status] += p.valor;
@@ -614,8 +656,8 @@ function htmlFontes() {
   const chaves = `<div class="chaves">${FASES.map(f => `<span><i style="background:${f.cor}"></i>${f.rotuloValor}</span>`).join('')}<span><i class="saldo"></i>Saldo previsto</span></div>`;
   return chaves + linhas.map(l => {
     const nome = l.nome === NAO_INFORMADA ? 'Fonte não informada' : l.nome;
-    const sub = l.oficial ? `${milhoes(l.disponivel)} previstos${l.obs ? `<span class="obs"> (${l.obs})</span>` : ''}`
-      : l.nome === OUTROS ? `<span class="miudo">${esc([...l.outros].sort().join(', ')) || 'nenhuma'}</span>` : 'dotação em branco no Notion';
+    const sub = l.oficial ? `${milhoes(l.disponivel)} previstos${l.obs ? `<span class="obs"> (${l.obs})</span>` : ''}${l.nota ? `<span class="miudo nota-fonte">${esc(l.nota)}</span>` : ''}`
+      : l.nome === OUTROS ? `<span class="miudo">${esc([...l.outros].sort().join(', ')) || 'nenhuma'}</span>` : 'dotação não apontada';
     const segs = FASES.map(f => l[f.id] ? `<span style="width:${l[f.id] / escala * 100}%;background:${f.cor}" title="${f.rotuloValor}: ${reaisCompleto(l[f.id])}"></span>` : '').join('');
     const valor = l.oficial
       ? `${reaisOuZero(l.contratado)}<small>contratado (${pct(l.contratado, l.disponivel)})</small>`
@@ -676,7 +718,7 @@ const COLUNAS = {
     ['Objeto', o => colObjeto(o)],
     ['Eixo', o => esc(o.eixo), 'col-eixo'],
     ['Valor estimado', valorCel, 'num'],
-    ['Documentos prontos', o => `<div class="docs">${Object.entries(o.preparo || {}).map(([k, v]) => `<span class="${v ? 'ok' : ''}" title="${k}: ${v ? 'pronto' : 'pendente'}">${k}</span>`).join('')}</div>`],
+    ['Documentação editalícia', o => esc(o.situacao) || '—'],
     ['Fonte', colFonte, 'col-fonte'],
     ['Local', colLocal, 'col-local'],
   ],
@@ -709,7 +751,7 @@ function htmlTabela(fase, lista, msgVazio) {
   if (!lista.length) return cab + `<tbody><tr><td colspan="${cols.length}" class="vazio-msg">${msgVazio}</td></tr></tbody>`;
   return cab + `<tbody>${lista.map(o => `<tr${o.sintetico ? ' class="sintetico"' : ''}>${cols.map(([, f, c]) => `<td class="${c || ''}">${f(o)}</td>`).join('')}</tr>`).join('')}</tbody>`;
 }
-const MSG_SEM_CONCLUIDAS = 'Nenhuma obra concluída cadastrada ainda. A base de obras concluídas será ligada na etapa de funcionalidades.';
+const MSG_SEM_CONCLUIDAS = 'Nenhuma obra entregue até o momento.';
 function montarTabela() {
   const eixo = document.getElementById('filtro-eixo').value;
   const termo = document.getElementById('busca').value.trim().toLowerCase();
@@ -741,7 +783,7 @@ function montarRelatorio() {
   const semana = `Semana de ${data(s.inicio)} a ${data(s.fim)}`;
   const topo = (titulo, pagina) => `<header class="rel-topo">
       <div><h1>Avança Uberlândia</h1><p class="rel-titulo">${titulo}</p></div>
-      <p class="rel-data">${semana}<br>Dados do Notion de ${data(DADOS.atualizadoEm)} | Página ${pagina} de 2</p></header>`;
+      <p class="rel-data">${semana}<br>${textoAtualizado()} | Página ${pagina} de 2</p></header>`;
   const detalhado = soma(objetos);
 
   // Cartões de objetos por situação
@@ -956,7 +998,7 @@ ${xf(0, 0, 0, 1, 'horizontal="center" vertical="top"')}
 function abasDoRelatorio() {
   const L = Excel.letra;
   const s = semanaDoRelatorio();
-  const periodo = `Semana de ${data(s.inicio)} a ${data(s.fim)}. Dados do Notion de ${data(DADOS.atualizadoEm)}.`;
+  const periodo = `Semana de ${data(s.inicio)} a ${data(s.fim)}. ${textoAtualizado()}.`;
   const nomeFase = id => FASES.find(f => f.id === id).nome;
   const fonteTxt = textoFonte;
   const mapa = o => o.local.link ? { f: `HYPERLINK("${o.local.link}","Abrir mapa")`, s: 'link' } : { v: '', s: 'texto' };
@@ -1054,7 +1096,7 @@ function abasDoRelatorio() {
   alturas[add(cabecalho(['Indicador', 'Valor', '% do programa'], [1, 2]))] = 24;
   const rTotal = R.length + 1;
   add([vazio('Total anunciado pela Prefeitura'), { v: TOTAL_PROGRAMA, s: 'moeda' }, { v: 1, s: 'pct' }]);
-  add([vazio('Cadastrado em objetos no Notion'), { f: 'SUM(Base_Valor)', s: 'moeda' }, { f: `B${rTotal + 1}/B${rTotal}`, s: 'pct' }]);
+  add([vazio('Detalhado em objetos'), { f: 'SUM(Base_Valor)', s: 'moeda' }, { f: `B${rTotal + 1}/B${rTotal}`, s: 'pct' }]);
   add([vazio('Ainda não detalhado em objetos'), { f: `B${rTotal}-B${rTotal + 1}`, s: 'moeda' }, { f: `B${rTotal + 2}/B${rTotal}`, s: 'pct' }]);
   add([]);
 
@@ -1087,7 +1129,7 @@ function abasDoRelatorio() {
     { nome: 'Resumo', cor: 'FF16213E', larguras: [40, 20, 18, 18, 18, 20, 14], linhas: R, mesclar, alturas, barras: barrasResumo,
       listas: [{ ref: 'B5:C5', origem: `Base!$S$5:$S$${5 + EIXOS.length}` }, { ref: 'B6:C6', origem: `Base!$F$4:$${ultimaCol}$4` }] },
     aba('Em andamento', 'FF2F6FA3', 'Obras em andamento',
-      ['Objeto', 'Processo', 'Empresa', 'Eixo', 'Valor contratado', 'Início (OS)', 'Previsão de fim', 'Avanço físico', 'Situação', 'Fonte', 'Dotação no Notion', 'Local', 'Mapa', 'Prioritário'],
+      ['Objeto', 'Processo', 'Empresa', 'Eixo', 'Valor contratado', 'Início (OS)', 'Previsão de fim', 'Avanço físico', 'Situação', 'Fonte', 'Dotação orçamentária', 'Local', 'Mapa', 'Prioritário'],
       [44, 13, 30, 24, 17, 12, 16, 12, 20, 26, 26, 34, 12, 11], porFase('andamento'),
       o => o.sintetico
         ? [vazio(o.nome), vazio(''), vazio(''), vazio('Vários'), { v: o.valor, s: 'moeda' }, { v: '', s: 'data' }, { v: '', s: 'mes' }, { v: '', s: 'pct' },
@@ -1096,14 +1138,14 @@ function abasDoRelatorio() {
            { v: o.inicio, s: 'data' }, { v: o.termino, s: 'mes' }, o.avanco != null ? { v: o.avanco / 100, s: 'pct' } : { v: '', s: 'pct' },
            vazio(o.situacao), vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')), vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [4], [4, 7], { barra: 7 }),
     aba('Em licitação', 'FFE9A92B', 'Objetos em licitação',
-      ['Objeto', 'Processo', 'Eixo', 'Valor estimado', 'Situação da licitação', 'Fonte', 'Dotação no Notion', 'Local', 'Mapa', 'Prioritário'],
+      ['Objeto', 'Processo', 'Eixo', 'Valor estimado', 'Situação da licitação', 'Fonte', 'Dotação orçamentária', 'Local', 'Mapa', 'Prioritário'],
       [48, 13, 22, 17, 22, 28, 26, 34, 12, 11], porFase('licitacao'),
       o => [vazio(o.nome), vazio(o.processo), vazio(o.eixo), { v: o.valor, s: 'moeda' }, vazio(o.situacao), vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')),
             vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [3], [3]),
     aba('Em planejamento', 'FF9AA8BD', 'Objetos em planejamento',
-      ['Objeto', 'Eixo', 'Valor estimado', 'ETP', 'TR', 'Projetos', 'Orçamento', 'Fonte', 'Dotação no Notion', 'Local', 'Mapa', 'Prioritário'],
-      [48, 22, 17, 8, 8, 10, 11, 24, 22, 34, 12, 11], porFase('planejamento'),
-      o => [vazio(o.nome), vazio(o.eixo), { v: o.valor, s: 'moeda' }, ...['ETP', 'TR', 'Projetos', 'Orçamento'].map(k => sim((o.preparo || {})[k])),
+      ['Objeto', 'Eixo', 'Valor estimado', 'Documentação editalícia', 'Fonte', 'Dotação orçamentária', 'Local', 'Mapa', 'Prioritário'],
+      [48, 24, 17, 20, 24, 22, 34, 12, 11], porFase('planejamento'),
+      o => [vazio(o.nome), vazio(o.eixo), { v: o.valor, s: 'moeda' }, vazio(o.situacao),
             vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')), vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [2], [2]),
     aba('Concluídas', 'FF2E9E6A', 'Obras concluídas', ['Objeto', 'Eixo', 'Valor', 'Conclusão', 'Fonte', 'Local'], [48, 22, 17, 16, 28, 34], porFase('concluida'),
       o => [vazio(o.nome), vazio(o.eixo), { v: o.valor, s: 'moeda' }, { v: o.conclusao || o.termino || '', s: 'mes' }, vazio(fonteTxt(o)), vazio(localTxt(o))], [2], [2]),
