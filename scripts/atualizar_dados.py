@@ -49,6 +49,11 @@ def normalizar(texto):
     return re.sub(r"\s+", " ", t).strip().casefold()
 
 
+def chave(texto):
+    """Como normalizar, mas também ignora vírgulas e outros sinais (para comparar eixos)."""
+    return re.sub(r"[^a-z0-9]+", " ", normalizar(texto)).strip()
+
+
 def reais(v):
     if v >= 1e9:
         return f"R$ {v / 1e9:.2f} bi".replace(".", ",")
@@ -289,17 +294,24 @@ def como_sim_nao(v):
 # ---------------------------------------------------------------------------
 # Regras do painel
 # ---------------------------------------------------------------------------
-PROCESSO = re.compile(r"^(CP|PE|PD|RDC|TP|CC|DL|IN)\s*\d", re.I)
+PROCESSO = re.compile(r"^(CP|PE|PD|PI|RDC|TP|CC|DL|IN|PP)\s*\d", re.I)
 EMPRESA = re.compile(r"(ltda|construtora|engenharia|consórcio|consorcio|service|servi[cç]os|comércio|comercio|"
                      r"evolução|evolucao|barros|sete|s\.a\.|eireli|\bme\b|\bepp\b)", re.I)
 
 
-def separar_titulo(bruto):
+def parece_empresa(parte, empresa):
+    if EMPRESA.search(parte):
+        return True
+    p, e = normalizar(parte), normalizar(empresa)
+    return bool(p and e and (p in e or p.split()[0] in e.split()))
+
+
+def separar_titulo(bruto, empresa=""):
     """'Obra X - Empresa Y - CP 123/2025' vira ('Obra X', 'CP 123/2025')."""
     partes = [p.strip().rstrip("=") for p in re.split(r"\s+-\s+", como_texto(bruto)) if p.strip()]
     processo = next((p for p in partes if PROCESSO.match(p)), "")
     resto = [p for p in partes if not PROCESSO.match(p)]
-    if len(resto) > 1 and EMPRESA.search(resto[-1]):
+    if len(resto) > 1 and parece_empresa(resto[-1], empresa):
         resto = resto[:-1]
     nome = re.sub(r"\s+", " ", " – ".join(resto)).strip()
     return (nome[:1].upper() + nome[1:]) if nome else "(sem título)", processo
@@ -316,8 +328,8 @@ def montar_local(texto, links, endereco, links_endereco):
         return {"texto": re.split(r",\s*Uberl[âa]ndia", endereco)[0].strip(), "link": link}
     rotulos = []
     for linha in str(texto or "").split("\n"):
-        sem_link = URL.sub("", linha).strip().rstrip(":").strip()
-        sem_link = re.sub(r"\s*\(.*?\)$", "", sem_link).strip().rstrip(".")
+        sem_link = URL.sub("", linha).strip()
+        sem_link = re.sub(r"\s*\(.*?\)$", "", sem_link).strip().rstrip(":.").strip()
         if sem_link:
             rotulos.append(sem_link)
     txt = ", ".join(rotulos)
@@ -332,7 +344,7 @@ class Regras:
     def __init__(self, cfg):
         self.cfg = cfg
         self.eixos = cfg["eixos"]
-        self.eixo_por_nome = {normalizar(e): e for e in self.eixos}
+        self.eixo_por_nome = {chave(e): e for e in self.eixos}
         self.fonte_por_nome = {}
         for f in cfg["fontes"]:
             for n in [f["nome"]] + list(f.get("nomes_no_notion", [])):
@@ -344,12 +356,15 @@ class Regras:
         self.regras_eixo = []
         for r in deducao.get("palavras_chave", []):
             palavras = [normalizar(p) for p in r.get("palavras", []) if p]
-            if palavras and r.get("eixo") in self.eixos:
+            eixo = self.eixo_por_nome.get(chave(r.get("eixo")))
+            if palavras and eixo:
                 padrao = "|".join(r"(?<![a-z0-9])" + re.escape(p) for p in palavras)
-                self.regras_eixo.append((r["eixo"], re.compile(padrao)))
-        self.eixo_por_secretaria = {normalizar(k): v for k, v in deducao.get("por_secretaria", {}).items()}
+                self.regras_eixo.append((eixo, re.compile(padrao)))
+        self.eixo_por_secretaria = {normalizar(k): self.eixo_por_nome[chave(v)]
+                                    for k, v in deducao.get("por_secretaria", {}).items() if chave(v) in self.eixo_por_nome}
         self.tag = normalizar(cfg["tag_do_programa"])
         self.tags_prioridade = {normalizar(t) for t in cfg.get("tags_de_prioridade", [])}
+        self.situacoes_ignoradas = [normalizar(s) for s in cfg.get("ignorar_situacao_com", []) if s]
 
     def fontes(self, dotacoes):
         """Converte as dotações do Notion nas fontes oficiais do programa."""
@@ -372,7 +387,7 @@ class Regras:
 
     def eixo(self, valor_notion, titulo, descricao, secretaria, avisos, nome_obj):
         if valor_notion:
-            e = self.eixo_por_nome.get(normalizar(valor_notion))
+            e = self.eixo_por_nome.get(chave(valor_notion))
             if e:
                 return e, "notion"
             avisos.append(f'"{nome_obj}": o eixo "{valor_notion}" não está na lista de eixos do config.json; entrou como "{OUTROS}".')
@@ -421,7 +436,7 @@ def ler_base(notion, regras, base, avisos):
         avisos.append(f'Base "{nome_base}": tem {len(ids_fontes)} fontes de dados; li todas.')
 
     colunas_cfg = dict(base.get("colunas", {}))
-    documentos = base.get("documentos", {})
+    ignorados = []
     objetos, total_linhas = [], 0
 
     for id_fonte in ids_fontes:
@@ -435,10 +450,8 @@ def ler_base(notion, regras, base, avisos):
             return None
 
         mapa = {campo: achar(nomes) for campo, nomes in colunas_cfg.items()}
-        mapa_docs = {rotulo: achar(nomes) for rotulo, nomes in documentos.items()}
         faltando = [nomes if isinstance(nomes, str) else " / ".join(nomes)
                     for campo, nomes in colunas_cfg.items() if mapa[campo] is None and campo not in ("eixo", "conclusao")]
-        faltando += [documentos[rotulo] for rotulo, nome in mapa_docs.items() if nome is None]
         if faltando:
             importantes = [colunas_cfg[c] for c in colunas_cfg if mapa[c] is None and c not in OPCIONAIS]
             alerta = " Atenção: entre elas há coluna essencial (título, valor, dotação ou tags)." if importantes else ""
@@ -465,7 +478,12 @@ def ler_base(notion, regras, base, avisos):
                 continue
 
             titulo_bruto = como_texto(valor("titulo")[0])
-            nome, processo = separar_titulo(titulo_bruto)
+            empresa = como_texto(valor("empresa")[0])
+            nome, processo = separar_titulo(titulo_bruto, empresa)
+            situacao = como_texto(valor("situacao")[0])
+            if any(s in normalizar(situacao) for s in regras.situacoes_ignoradas):
+                ignorados.append(f"{nome} ({situacao})")
+                continue
             descricao = como_texto(valor("descricao")[0])
             texto_local, links_local = valor("localizacao")
             texto_end, links_end = valor("endereco")
@@ -481,11 +499,11 @@ def ler_base(notion, regras, base, avisos):
                 "status": base["fase"],
                 "nome": nome,
                 "processo": processo,
-                "empresa": como_texto(valor("empresa")[0]),
+                "empresa": empresa,
                 "eixo": eixo,
                 "eixoOrigem": origem,
                 "valor": round(como_numero(valor("valor")[0]) or 0.0, 2),
-                "situacao": como_texto(valor("situacao")[0]),
+                "situacao": situacao,
                 "dotacao": dotacao,
                 "fontes": fontes,
                 "outros": outros,
@@ -501,11 +519,10 @@ def ler_base(notion, regras, base, avisos):
                 })
             if base["fase"] == "concluida":
                 o["conclusao"] = como_data(valor("conclusao")[0])
-            if documentos:
-                o["preparo"] = {rotulo: como_sim_nao(ler(props.get(nome_col or "", {}))[0])
-                                for rotulo, nome_col in mapa_docs.items()}
             objetos.append(o)
 
+    if ignorados:
+        avisos.append(f'Base "{nome_base}": {len(ignorados)} objeto(s) com rescisão ficaram de fora: {"; ".join(ignorados)}.')
     resumo = {"base": nome_base, "linhas": total_linhas, "no_painel": len(objetos),
               "valor": sum(o["valor"] for o in objetos), "pulada": False}
     return objetos, resumo
@@ -525,8 +542,10 @@ def montar_site(cfg, dados, pasta_saida):
     for marcador in ("/*__CONFIG__*/null", "/*__DADOS__*/null"):
         if modelo.count(marcador) != 1:
             raise Erro(f"O index.html não tem o marcador {marcador} (ou tem mais de um). Use o index.html original do pacote.")
-    publico = {k: v for k, v in cfg.items() if k in ("aviso_no_topo", "total_do_programa", "eixos")}
-    publico["fontes"] = [{"nome": f["nome"], "disponivel": f["disponivel"], "detalhe": f.get("detalhe", "")} for f in cfg["fontes"]]
+    publico = {k: v for k, v in cfg.items() if k in ("aviso_no_topo", "total_do_programa", "eixos", "botao_atualizar_agora")}
+    publico["fontes"] = [{"nome": f["nome"], "disponivel": f["disponivel"], "detalhe": f.get("detalhe", ""), "nota": f.get("nota", "")}
+                         for f in cfg["fontes"]]
+    publico["repositorio"] = os.environ.get("GITHUB_REPOSITORY", "")   # "usuario/repositorio", preenchido pelo GitHub Actions
     html = (modelo.replace("/*__CONFIG__*/null", para_script(publico))
                   .replace("/*__DADOS__*/null", para_script(dados)))
     pasta_saida.mkdir(parents=True, exist_ok=True)

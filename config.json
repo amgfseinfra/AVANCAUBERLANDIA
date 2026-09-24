@@ -1,10 +1,12 @@
 {
   "_leia": "Configuração do painel. Troque só os textos entre aspas e os números. Ao salvar, o site se atualiza sozinho em 1 a 2 minutos.",
 
-  "aviso_no_topo": "Prévia do painel. Dados ainda em revisão.",
+  "aviso_no_topo": "",
+  "botao_atualizar_agora": true,
   "tag_do_programa": "Avança Uberlândia",
   "tags_de_prioridade": ["Prioridade alta", "Prioritário"],
   "total_do_programa": 2111900000,
+  "ignorar_situacao_com": ["rescisão"],
 
   "bases": [
     {
@@ -56,17 +58,12 @@
         "titulo": "Nome",
         "descricao": "Objeto",
         "valor": "Valor estimado",
+        "situacao": "Documentação editalícia",
         "secretaria": "Secretaria",
         "dotacao": "Dotação orçamentária",
         "tags": "Tag",
         "eixo": "Eixo temático",
         "localizacao": "Localização"
-      },
-      "documentos": {
-        "ETP": "ETP",
-        "TR": "TR",
-        "Projetos": "Projetos",
-        "Orçamento": "Orçamento"
       }
     },
     {
@@ -78,12 +75,10 @@
         "titulo": "Objeto - Contrato",
         "descricao": "Objeto",
         "valor": "Valor",
-        "aditivo": "Valor aditivado",
         "empresa": "Empresa",
         "inicio": "Ordem de serviço",
         "termino": "Previsão de término",
         "conclusao": ["Data de conclusão", "Conclusão"],
-        "avanco": "Avanço",
         "situacao": "Status do objeto",
         "secretaria": "Secretaria",
         "dotacao": "Dotação orçamentária",
@@ -96,8 +91,9 @@
   ],
 
   "fontes": [
-    { "nome": "PAC", "disponivel": 508000000, "nomes_no_notion": ["PAC"] },
+    { "nome": "PAC", "disponivel": 508000000, "nomes_no_notion": ["PAC", "Novo PAC"] },
     { "nome": "Novo Finisa 1 e 2", "disponivel": 400000000, "detalhe": "R$ 200 mi cada",
+      "nota": "Inclui um pequeno remanescente do FINISA antigo, por isso o total pode passar um pouco de R$ 400 mi. Além disso, alguns objetos serão apostilados com outras fontes à medida que elas chegarem.",
       "nomes_no_notion": ["FINISA", "Finisa 1", "Finisa 2", "Novo Finisa", "Novo Finisa 1", "Novo Finisa 2"] },
     { "nome": "Ministério das Cidades (MCID)", "disponivel": 386000000,
       "nomes_no_notion": ["Ministério das Cidades", "Ministério das Cidades (MCID)", "MCID"] },
@@ -109,20 +105,24 @@
   ],
   "dotacoes_sem_fonte": ["Não definido", "A definir"],
   "agrupar_em_outros": [
+    { "nome": "PAC antigo (2023)", "quando_contem": ["pac (2023)"] },
     { "nome": "Emendas parlamentares", "quando_contem": ["emenda"] },
     { "nome": "Recursos próprios", "quando_contem": ["recurso próprio"] },
     { "nome": "Pró-Transporte", "quando_contem": ["pró-tra", "pro-tra"] },
     { "nome": "Vale", "quando_contem": ["vale"] }
   ],
 
+  "_leia_eixos": "Os eixos precisam ter o mesmo nome das opções do campo Eixo temático no Notion. Maiúsculas, acentos e vírgulas não fazem diferença. Objeto sem eixo entra em Outros.",
   "eixos": [
     "Educação",
     "Saúde",
     "Cultura, esporte e lazer",
     "Desenvolvimento social",
-    "Infraestrutura de saneamento",
-    "Infraestrutura de mobilidade urbana",
-    "Meio ambiente",
+    "Saneamento",
+    "Mobilidade urbana",
+    "Infraestrutura global",
+    "Infraestrutura predial",
+    "Meio ambiente e sustentabilidade",
     "Outros"
   ],
 
@@ -133,18 +133,18 @@
       { "eixo": "Educação", "palavras": ["EMEI", "EMEF", "escola", "creche", "educaç"] },
       { "eixo": "Desenvolvimento social", "palavras": ["CRAS", "CREAS", "NAICA", "CEAI", "desenvolvimento social", "assistência social"] },
       { "eixo": "Cultura, esporte e lazer", "palavras": ["esport", "poliesport", "multiesport", "quadra", "atletismo", "tênis", "teatro", "cineteatro", "cultur", "lazer", "museu", "biblioteca"] },
-      { "eixo": "Infraestrutura de saneamento", "palavras": ["esgoto", "coletor", "ETE", "drenagem", "pluvial", "represa", "barragem", "vertedor", "sub-bacia", "saneamento", "água", "enchente"] },
-      { "eixo": "Meio ambiente", "palavras": ["praça", "ecoponto", "parque", "ambient", "arboriza", "resíduo"] },
-      { "eixo": "Infraestrutura de mobilidade urbana", "palavras": ["viário", "viária", "viaduto", "ponte", "trevo", "terminal", "paviment", "avenida", "av.", "mobilidade", "trânsito", "asfalt", "ciclovia", "estrada"] }
+      { "eixo": "Saneamento", "palavras": ["esgoto", "coletor", "ETE", "drenagem", "pluvial", "represa", "barragem", "vertedor", "sub-bacia", "saneamento", "água", "enchente", "cheia"] },
+      { "eixo": "Meio ambiente e sustentabilidade", "palavras": ["praça", "ecoponto", "parque", "ambient", "arboriza", "resíduo"] },
+      { "eixo": "Mobilidade urbana", "palavras": ["viário", "viária", "viaduto", "ponte", "trevo", "terminal", "paviment", "recapeamento", "avenida", "av.", "mobilidade", "trânsito", "asfalt", "ciclovia", "estrada"] }
     ],
     "por_secretaria": {
       "Saúde": "Saúde",
       "Educação": "Educação",
-      "DMAE": "Infraestrutura de saneamento",
-      "SETTRAN": "Infraestrutura de mobilidade urbana",
+      "DMAE": "Saneamento",
+      "SETTRAN": "Mobilidade urbana",
       "FUTEL": "Cultura, esporte e lazer",
       "Cultura e Turismo": "Cultura, esporte e lazer",
-      "Gestão Ambiental e Sustentabilidade": "Meio ambiente",
+      "Gestão Ambiental e Sustentabilidade": "Meio ambiente e sustentabilidade",
       "Desenvolvimento Social": "Desenvolvimento social"
     }
   }
