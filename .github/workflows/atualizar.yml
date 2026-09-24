@@ -1,0 +1,45 @@
+# Busca os dados no Notion e publica o painel no GitHub Pages.
+# Roda sozinho todo dia, quando alguém clica em "Run workflow"
+# e sempre que um arquivo do repositório é alterado.
+
+name: Atualizar painel
+
+on:
+  schedule:
+    - cron: "17 8 * * *"   # todo dia às 5h17 de Brasília (8h17 UTC)
+  workflow_dispatch:        # cria o botão "Run workflow" na aba Actions
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - name: Baixar os arquivos do repositório
+        uses: actions/checkout@v6
+
+      - name: Buscar os dados no Notion e montar o site
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: python3 scripts/atualizar_dados.py
+
+      - name: Preparar o site para publicação
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Publicar no GitHub Pages
+        id: publicar
+        uses: actions/deploy-pages@v5
