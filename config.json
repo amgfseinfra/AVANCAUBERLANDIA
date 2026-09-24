@@ -1,0 +1,151 @@
+{
+  "_leia": "Configuração do painel. Troque só os textos entre aspas e os números. Ao salvar, o site se atualiza sozinho em 1 a 2 minutos.",
+
+  "aviso_no_topo": "Prévia do painel. Dados ainda em revisão.",
+  "tag_do_programa": "Avança Uberlândia",
+  "tags_de_prioridade": ["Prioridade alta", "Prioritário"],
+  "total_do_programa": 2111900000,
+
+  "bases": [
+    {
+      "nome": "Obras em andamento",
+      "fase": "andamento",
+      "link_ou_id": "6db814ce57dd8245ae5481bdb97f2768",
+      "exigir_tag": true,
+      "colunas": {
+        "titulo": "Objeto - Contrato",
+        "descricao": "Objeto",
+        "valor": "Valor",
+        "aditivo": "Valor aditivado",
+        "empresa": "Empresa",
+        "inicio": "Ordem de serviço",
+        "termino": "Previsão de término",
+        "avanco": "Avanço",
+        "situacao": "Status do objeto",
+        "secretaria": "Secretaria",
+        "dotacao": "Dotação orçamentária",
+        "tags": "Tag",
+        "eixo": "Eixo temático",
+        "endereco": "Local 1",
+        "localizacao": "Localização"
+      }
+    },
+    {
+      "nome": "Objetos em licitação",
+      "fase": "licitacao",
+      "link_ou_id": "b1a814ce57dd829e99c30105b47bf8c6",
+      "exigir_tag": true,
+      "colunas": {
+        "titulo": "Objeto - Contrato",
+        "descricao": "Objeto",
+        "valor": "Valor estimado",
+        "situacao": "Status da licitação",
+        "secretaria": "Secretaria",
+        "dotacao": "Dotação orçamentária",
+        "tags": "Tag",
+        "eixo": "Eixo temático",
+        "localizacao": "Localização"
+      }
+    },
+    {
+      "nome": "Objetos em planejamento",
+      "fase": "planejamento",
+      "link_ou_id": "77a814ce57dd8261a881810ebfdaaa39",
+      "exigir_tag": true,
+      "colunas": {
+        "titulo": "Nome",
+        "descricao": "Objeto",
+        "valor": "Valor estimado",
+        "secretaria": "Secretaria",
+        "dotacao": "Dotação orçamentária",
+        "tags": "Tag",
+        "eixo": "Eixo temático",
+        "localizacao": "Localização"
+      },
+      "documentos": {
+        "ETP": "ETP",
+        "TR": "TR",
+        "Projetos": "Projetos",
+        "Orçamento": "Orçamento"
+      }
+    },
+    {
+      "nome": "Objetos entregues",
+      "fase": "concluida",
+      "link_ou_id": "https://app.notion.com/p/056814ce57dd830aa90501f0270a9f80?v=c7f814ce57dd836ebc9408e7e1ee6a6a",
+      "exigir_tag": true,
+      "colunas": {
+        "titulo": "Objeto - Contrato",
+        "descricao": "Objeto",
+        "valor": "Valor",
+        "aditivo": "Valor aditivado",
+        "empresa": "Empresa",
+        "inicio": "Ordem de serviço",
+        "termino": "Previsão de término",
+        "conclusao": ["Data de conclusão", "Conclusão"],
+        "avanco": "Avanço",
+        "situacao": "Status do objeto",
+        "secretaria": "Secretaria",
+        "dotacao": "Dotação orçamentária",
+        "tags": "Tag",
+        "eixo": "Eixo temático",
+        "endereco": "Local 1",
+        "localizacao": "Localização"
+      }
+    }
+  ],
+
+  "fontes": [
+    { "nome": "PAC", "disponivel": 508000000, "nomes_no_notion": ["PAC"] },
+    { "nome": "Novo Finisa 1 e 2", "disponivel": 400000000, "detalhe": "R$ 200 mi cada",
+      "nomes_no_notion": ["FINISA", "Finisa 1", "Finisa 2", "Novo Finisa", "Novo Finisa 1", "Novo Finisa 2"] },
+    { "nome": "Ministério das Cidades (MCID)", "disponivel": 386000000,
+      "nomes_no_notion": ["Ministério das Cidades", "Ministério das Cidades (MCID)", "MCID"] },
+    { "nome": "BNDES", "disponivel": 180000000, "nomes_no_notion": ["BNDES"] },
+    { "nome": "DNIT-DER", "disponivel": 130000000, "nomes_no_notion": ["DNIT-DER", "DNIT", "DER", "DNIT/DER"] },
+    { "nome": "BNDES-PMAT", "disponivel": 100000000, "nomes_no_notion": ["BNDES-PMAT", "BNDES PMAT"] },
+    { "nome": "Cohab", "disponivel": 47000000, "nomes_no_notion": ["Cohab", "COHAB (MG)", "COHAB-MG", "COHAB MG"] },
+    { "nome": "Governo do Estado", "disponivel": 20900000, "nomes_no_notion": ["Governo do Estado"] }
+  ],
+  "dotacoes_sem_fonte": ["Não definido", "A definir"],
+  "agrupar_em_outros": [
+    { "nome": "Emendas parlamentares", "quando_contem": ["emenda"] },
+    { "nome": "Recursos próprios", "quando_contem": ["recurso próprio"] },
+    { "nome": "Pró-Transporte", "quando_contem": ["pró-tra", "pro-tra"] },
+    { "nome": "Vale", "quando_contem": ["vale"] }
+  ],
+
+  "eixos": [
+    "Educação",
+    "Saúde",
+    "Cultura, esporte e lazer",
+    "Desenvolvimento social",
+    "Infraestrutura de saneamento",
+    "Infraestrutura de mobilidade urbana",
+    "Meio ambiente",
+    "Outros"
+  ],
+
+  "deducao_de_eixo": {
+    "_leia": "Só é usada quando o campo Eixo temático está vazio no Notion. As regras são testadas de cima para baixo, primeiro no título e depois na descrição.",
+    "palavras_chave": [
+      { "eixo": "Saúde", "palavras": ["UBS", "UPA", "UAI", "CAPS", "policlínica", "hospital", "saúde", "mamografia"] },
+      { "eixo": "Educação", "palavras": ["EMEI", "EMEF", "escola", "creche", "educaç"] },
+      { "eixo": "Desenvolvimento social", "palavras": ["CRAS", "CREAS", "NAICA", "CEAI", "desenvolvimento social", "assistência social"] },
+      { "eixo": "Cultura, esporte e lazer", "palavras": ["esport", "poliesport", "multiesport", "quadra", "atletismo", "tênis", "teatro", "cineteatro", "cultur", "lazer", "museu", "biblioteca"] },
+      { "eixo": "Infraestrutura de saneamento", "palavras": ["esgoto", "coletor", "ETE", "drenagem", "pluvial", "represa", "barragem", "vertedor", "sub-bacia", "saneamento", "água", "enchente"] },
+      { "eixo": "Meio ambiente", "palavras": ["praça", "ecoponto", "parque", "ambient", "arboriza", "resíduo"] },
+      { "eixo": "Infraestrutura de mobilidade urbana", "palavras": ["viário", "viária", "viaduto", "ponte", "trevo", "terminal", "paviment", "avenida", "av.", "mobilidade", "trânsito", "asfalt", "ciclovia", "estrada"] }
+    ],
+    "por_secretaria": {
+      "Saúde": "Saúde",
+      "Educação": "Educação",
+      "DMAE": "Infraestrutura de saneamento",
+      "SETTRAN": "Infraestrutura de mobilidade urbana",
+      "FUTEL": "Cultura, esporte e lazer",
+      "Cultura e Turismo": "Cultura, esporte e lazer",
+      "Gestão Ambiental e Sustentabilidade": "Meio ambiente",
+      "Desenvolvimento Social": "Desenvolvimento social"
+    }
+  }
+}

@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel Avança Uberlândia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ 1. CORES E FONTES (mude aqui para alterar o visual inteiro) ============ */
+:root {
+  --tinta: #16213E;        /* texto principal */
+  --tinta-2: #55617A;      /* texto secundário */
+  --papel: #F3F5F8;        /* fundo da página */
+  --superficie: #FFFFFF;   /* fundo dos painéis */
+  --linha: #DCE1E8;        /* bordas */
+  --concluida: #2E9E6A;
+  --andamento: #2F6FA3;
+  --licitacao: #E9A92B;
+  --planejamento: #9AA8BD;
+  --vazio: #E6EAF0;
+  --destaque-fundo: #FDF4DE;
+  --fonte-texto: "Barlow", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --fonte-titulo: "Barlow Semi Condensed", "Barlow", "Arial Narrow", "Segoe UI", sans-serif;
+}
+
+/* ============ 2. BASE ============ */
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--papel); color: var(--tinta);
+  font-family: var(--fonte-texto); font-size: 16px; line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.pagina { max-width: 1240px; margin: 0 auto; padding: 24px 24px 64px; }
+h1, h2, h3 { font-family: var(--fonte-titulo); margin: 0; line-height: 1.15; }
+a { color: var(--andamento); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--andamento); outline-offset: 2px; }
+
+.modelo-vazio { padding: 80px 0; max-width: 60ch; }
+.modelo-vazio p { color: var(--tinta-2); }
+.aviso {
+  background: var(--destaque-fundo); border: 1px solid #F0D89A; border-radius: 10px;
+  padding: 10px 14px; font-size: 14px; margin-bottom: 24px;
+}
+
+/* ============ 3. CABEÇALHO ============ */
+.topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+.topo h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.01em; }
+.topo p { margin: 4px 0 0; color: var(--tinta-2); }
+.topo .atualizado { font-size: 14px; }
+.botao {
+  background: var(--tinta); color: #fff; border: 0; border-radius: 10px;
+  padding: 12px 20px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 10px; align-items: center;
+}
+.botao:hover { background: #24345C; }
+.botao svg { width: 18px; height: 18px; }
+
+/* ============ 4. RÉGUA DO PROGRAMA (destaque principal) ============ */
+.regua-painel { background: var(--superficie); border: 1px solid var(--linha); border-radius: 14px; padding: 28px 28px 24px; margin-bottom: 20px; }
+.regua-cabeca { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 32px; margin-bottom: 22px; }
+.regua-total { font-family: var(--fonte-titulo); font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.regua-total small { display: block; font-family: var(--fonte-texto); font-size: 15px; font-weight: 500; color: var(--tinta-2); letter-spacing: 0; margin-top: 6px; }
+.regua-resumo { color: var(--tinta-2); max-width: 46ch; }
+.regua-resumo strong { color: var(--tinta); }
+
+.regua { position: relative; padding-bottom: 30px; }
+.regua-barra { display: flex; height: 48px; border-radius: 6px; overflow: hidden; background:
+  repeating-linear-gradient(135deg, #EEF1F5 0 8px, #E2E7EE 8px 16px); }
+.regua-barra span { display: block; height: 100%; width: 0; transition: width 900ms cubic-bezier(.2,.7,.2,1); }
+.regua-escala { position: absolute; left: 0; right: 0; top: 48px; height: 30px; }
+.regua-escala i { position: absolute; top: 0; width: 1px; height: 6px; background: #A9B3C2; }
+.regua-escala i.maior { height: 11px; background: var(--tinta-2); }
+.regua-escala b { position: absolute; top: 12px; font-size: 12px; font-weight: 500; color: var(--tinta-2); transform: translateX(-50%); white-space: nowrap; }
+.regua-escala b.fim { transform: translateX(-100%); }
+.regua-escala b.inicio { transform: none; }
+
+.regua-legenda { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px 24px; margin-top: 18px; }
+.regua-legenda div { border-left: 4px solid; padding-left: 10px; }
+.regua-legenda span { display: block; font-size: 14px; color: var(--tinta-2); }
+.regua-legenda strong { font-family: var(--fonte-titulo); font-size: 22px; font-weight: 600; }
+.regua-legenda em { font-style: normal; font-size: 14px; color: var(--tinta-2); margin-left: 6px; }
+.regua-legenda small { display: block; font-size: 13px; color: var(--tinta-2); }
+
+/* ============ 5. PAINÉIS ============ */
+.grade { display: grid; grid-template-columns: 5fr 7fr; gap: 20px; margin-bottom: 20px; }
+.painel { background: var(--superficie); border: 1px solid var(--linha); border-radius: 14px; padding: 24px; min-width: 0; }
+.painel h2 { font-size: 24px; font-weight: 600; }
+.painel .descricao { margin: 4px 0 20px; color: var(--tinta-2); font-size: 15px; }
+.nota { font-size: 13px; color: var(--tinta-2); margin: 14px 0 0; }
+
+/* Rosca (gráfico de pizza com furo) */
+.rosca-bloco { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.rosca { width: 190px; height: 190px; flex: none; }
+.rosca circle { transition: opacity 150ms; }
+.rosca .centro-valor { font-family: var(--fonte-titulo); font-weight: 700; fill: var(--tinta); }
+.rosca .centro-rotulo { font-size: 12px; fill: var(--tinta-2); }
+.legenda { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 200px; }
+.legenda li { display: grid; grid-template-columns: 12px 1fr auto 64px; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--linha); cursor: default; }
+.legenda li:last-child { border-bottom: 0; }
+.legenda .cor { width: 12px; height: 12px; border-radius: 3px; transform: translateY(1px); }
+.legenda .valor { font-weight: 600; text-align: right; white-space: nowrap; }
+.legenda .sub { font-size: 13px; color: var(--tinta-2); text-align: right; white-space: nowrap; }
+.legenda .detalhe { display: block; font-size: 13px; color: var(--tinta-2); line-height: 1.3; }
+.apagado { opacity: 0.3; }
+
+.entregas { margin-top: 22px; padding-top: 16px; border-top: 2px solid var(--linha); }
+.entregas h3 { font-size: 17px; margin-bottom: 8px; }
+.entregas ul { list-style: none; margin: 0; padding: 0; }
+.entregas li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 15px; }
+.entregas small { display: block; font-size: 13px; color: var(--tinta-2); }
+.entregas time { color: var(--tinta-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Barras por eixo */
+.chaves { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--tinta-2); margin: -8px 0 16px; }
+.chaves span { display: inline-flex; align-items: center; gap: 6px; }
+.chaves i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.eixo { display: grid; grid-template-columns: 180px 1fr 104px; gap: 14px; align-items: center; padding: 8px 0; }
+.eixo-nome { font-weight: 600; line-height: 1.25; }
+.eixo-nome small { display: block; font-weight: 400; font-size: 13px; color: var(--tinta-2); }
+.eixo-trilho { height: 22px; background: var(--vazio); border-radius: 4px; overflow: hidden; display: flex; }
+.eixo-trilho span { height: 100%; }
+.eixo-valor { font-family: var(--fonte-titulo); font-weight: 600; font-size: 18px; text-align: right; white-space: nowrap; }
+
+/* Fontes */
+.fontes-grade { display: grid; grid-template-columns: minmax(280px, 340px) 1fr; gap: 36px; align-items: start; }
+.fontes-grade .rosca-bloco, #rosca-status { flex-direction: column; align-items: stretch; }
+.fontes-grade .rosca, #rosca-status .rosca { margin: 0 auto 8px; width: 210px; height: 210px; }
+.fontes-grade .legenda { min-width: 0; width: 100%; }
+
+/* ============ 6. TABELAS ============ */
+.rolagem { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+#tabela-objetos { min-width: 1080px; }
+#tabela-objetos td:first-child { min-width: 250px; }
+#tabela-objetos td.col-local { min-width: 150px; max-width: 200px; }
+#tabela-objetos td.col-eixo { min-width: 110px; }
+#tabela-objetos td.col-fonte { max-width: 140px; }
+#tabela-objetos td, #tabela-objetos th { padding-left: 10px; padding-right: 10px; }
+th { text-align: left; font-weight: 600; font-size: 13px; color: var(--tinta-2); padding: 10px 12px; border-bottom: 2px solid var(--linha); white-space: nowrap; }
+td { padding: 12px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr:hover td { background: #F8FAFC; }
+.tabela-fontes td { padding: 9px 12px; }
+.tabela-fontes .cor { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; }
+.tabela-fontes tfoot td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--linha); }
+.indefinido { color: var(--tinta-2); font-style: italic; }
+
+.controles { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.abas { display: flex; flex-wrap: wrap; gap: 6px; }
+.aba { border: 1px solid var(--linha); background: var(--superficie); border-radius: 999px; padding: 7px 14px; cursor: pointer; font-weight: 500; display: inline-flex; gap: 8px; align-items: center; }
+.aba i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.aba[aria-selected="true"] { background: var(--tinta); color: #fff; border-color: var(--tinta); }
+.filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+.filtros select, .filtros input { border: 1px solid var(--linha); border-radius: 8px; padding: 8px 12px; background: var(--superficie); }
+.filtros input { width: 260px; max-width: 100%; }
+
+.obj-nome { font-weight: 600; line-height: 1.3; }
+.obj-sub { font-size: 13px; color: var(--tinta-2); margin-top: 2px; }
+.selo { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-left: 6px; background: var(--destaque-fundo); color: #8A5A00; vertical-align: 1px; }
+.avanco { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.avanco-trilho { width: 84px; height: 8px; background: var(--vazio); border-radius: 4px; overflow: hidden; }
+.avanco-trilho span { display: block; height: 100%; background: var(--andamento); }
+.situacao { font-size: 13px; color: var(--tinta-2); white-space: nowrap; }
+.docs { display: flex; gap: 4px; flex-wrap: nowrap; }
+.docs span { font-size: 12px; border-radius: 4px; padding: 1px 6px; border: 1px solid var(--linha); color: #9AA3B2; }
+.docs span.ok { background: #E4EEF7; border-color: #E4EEF7; color: var(--andamento); font-weight: 600; }
+tr.sintetico td { background: #F8FAFC; }
+tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
+.vazio-msg { padding: 40px 12px; text-align: center; color: var(--tinta-2); }
+
+/* ============ 7. RODAPÉ E AVISO FLUTUANTE ============ */
+.rodape { margin-top: 28px; font-size: 14px; color: var(--tinta-2); max-width: 80ch; }
+.rodape h3 { font-size: 16px; color: var(--tinta); margin-bottom: 6px; }
+.rodape ul { margin: 0; padding-left: 18px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--tinta); color: #fff; padding: 12px 18px; border-radius: 10px; transition: all 200ms; pointer-events: none; max-width: calc(100% - 32px); }
+.toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+/* ============ 8. CELULAR E TELAS MENORES ============ */
+@media (max-width: 900px) {
+  .grade, .fontes-grade { grid-template-columns: 1fr; }
+  .regua-total { font-size: 44px; }
+  .topo h1 { font-size: 32px; }
+}
+@media (max-width: 560px) {
+  .pagina { padding: 16px 14px 48px; }
+  .regua-painel, .painel { padding: 18px; }
+  .eixo { grid-template-columns: 1fr auto; }
+  .eixo-trilho { grid-column: 1 / -1; grid-row: 2; }
+  .regua-escala b.meio { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .regua-barra span, .toast { transition: none; }
+}
+
+/* ============ 9. BOTÕES DO RELATÓRIO ============ */
+.acoes-relatorio { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.acoes-relatorio > span { font-size: 14px; color: var(--tinta-2); }
+.acoes-relatorio div { display: flex; gap: 8px; flex-wrap: wrap; }
+.botao.secundario { background: var(--superficie); color: var(--tinta); border: 1px solid var(--tinta); }
+.botao.secundario:hover { background: #EEF1F6; }
+.so-impressao { display: none; }
+@media (max-width: 560px) { .acoes-relatorio { align-items: flex-start; } }
+
+/* ============ 10. FONTES DE RECURSO (barras de previsto x comprometido) ============ */
+.fonte-linha { display: grid; grid-template-columns: 230px 1fr 150px; gap: 16px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--linha); }
+.fonte-linha:last-child { border-bottom: 0; }
+.fonte-linha.separa { border-top: 2px solid var(--linha); margin-top: 6px; }
+.fonte-nome { font-weight: 600; line-height: 1.25; }
+.fonte-nome small { display: block; font-weight: 400; font-size: 13px; color: var(--tinta-2); }
+.fonte-nome .miudo { font-size: 11px; line-height: 1.3; margin-top: 2px; }
+.fonte-barra { position: relative; height: 22px; }
+.fonte-disp { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
+  background: repeating-linear-gradient(135deg, #EEF1F5 0 6px, #E0E5EC 6px 12px); }
+.fonte-segs { position: absolute; left: 0; top: 0; bottom: 0; right: 0; display: flex; }
+.fonte-segs span { height: 100%; }
+.fonte-segs span:first-child { border-radius: 4px 0 0 4px; }
+.fonte-valor { text-align: right; font-family: var(--fonte-titulo); font-weight: 600; font-size: 18px; line-height: 1.15; white-space: nowrap; }
+.fonte-valor small { display: block; font-family: var(--fonte-texto); font-weight: 400; font-size: 13px; color: var(--tinta-2); }
+.chaves i.saldo { background: repeating-linear-gradient(135deg, #EEF1F5 0 3px, #D5DBE4 3px 6px); }
+details.detalhes { margin-top: 16px; }
+details.detalhes summary { cursor: pointer; font-weight: 600; color: var(--andamento); }
+details.detalhes .rolagem { margin-top: 10px; }
+.obj-sub .miudo, .miudo { font-size: 11px; color: var(--tinta-2); }
+@media (max-width: 700px) {
+  .fonte-linha { grid-template-columns: 1fr auto; }
+  .fonte-barra { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ============ 11. RELATÓRIO EM PDF ============
+   O relatório é montado pelo JavaScript em #relatorio, com o tamanho exato de uma folha A4 deitada.
+   Na tela ele fica fora da área visível (assim dá para medir e ajustar); na impressão, só ele aparece. */
+#relatorio { position: absolute; left: -10000px; top: 0; visibility: hidden; font-size: 11px; line-height: 1.35; color: var(--tinta); background: #fff; }
+#relatorio .folha { width: 277mm; box-sizing: border-box; }
+@page { size: A4 landscape; margin: 10mm; }
+@media print {
+  html, body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pagina, .toast { display: none !important; }
+  #relatorio { position: static; visibility: visible; }
+  #relatorio .folha { break-after: page; overflow: hidden; }
+  #relatorio .folha:last-child { break-after: auto; }
+}
+#relatorio .rel-topo { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--tinta); padding-bottom: 5px; margin-bottom: 10px; }
+#relatorio .rel-topo h1 { font-size: 22px; }
+#relatorio .rel-topo p { margin: 1px 0 0; color: var(--tinta-2); font-size: 11px; }
+#relatorio .rel-topo .rel-titulo { color: var(--tinta); font-weight: 600; font-size: 12px; }
+#relatorio .rel-topo .rel-data { text-align: right; }
+#relatorio .rel-bloco { border: 1px solid var(--linha); border-radius: 8px; padding: 8px 14px 6px; }
+#relatorio .rel-regua-cabeca { display: flex; align-items: baseline; gap: 20px; margin-bottom: 6px; }
+#relatorio .rel-regua-cabeca strong { font-family: var(--fonte-titulo); font-size: 26px; line-height: 1; }
+#relatorio .rel-regua-cabeca span { color: var(--tinta-2); font-size: 11px; }
+#relatorio .rel-regua-cabeca b { color: var(--tinta); }
+#relatorio .regua { padding-bottom: 18px; }
+#relatorio .regua-barra { height: 22px; }
+#relatorio .regua-barra span { transition: none; }
+#relatorio .regua-escala { top: 22px; }
+#relatorio .regua-escala b { font-size: 9px; top: 9px; }
+#relatorio .regua-legenda { grid-template-columns: repeat(5, 1fr); gap: 6px 14px; margin-top: 2px; }
+#relatorio .regua-legenda div { border-left-width: 3px; padding-left: 8px; }
+#relatorio .regua-legenda span { display: inline; font-size: 10px; margin-right: 6px; }
+#relatorio .regua-legenda strong { font-size: 14px; }
+#relatorio .regua-legenda em { font-size: 10px; }
+#relatorio .regua-legenda small { display: block; font-size: 9px; color: var(--tinta-2); }
+#relatorio .rel-nota { margin: 8px 0 0; font-size: 9px; color: var(--tinta-2); }
+
+#relatorio .rel-listas { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; align-items: start; margin-top: 10px; }
+#relatorio .rel-cartao { border: 1px solid var(--linha); border-top: 4px solid; border-radius: 8px; padding: 5px 10px 6px; }
+#relatorio .rel-coluna .rel-cartao + .rel-cartao { margin-top: 10px; }
+#relatorio .rel-cartao h2 { font-size: 13px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+#relatorio .rel-cartao h2 small { font-family: var(--fonte-texto); font-size: 10px; font-weight: 500; color: var(--tinta-2); white-space: nowrap; }
+#relatorio .rel-lista { width: 100%; border-collapse: collapse; font-size: 9px; }
+#relatorio .rel-lista th { font-size: 8.5px; font-weight: 600; color: var(--tinta-2); text-align: left; padding: 1px 4px; border-bottom: 1px solid var(--linha); white-space: nowrap; }
+#relatorio .rel-lista td { padding: 1.5px 4px; border-bottom: 1px solid #EDF0F4; vertical-align: top; line-height: 1.2; }
+#relatorio .rel-lista .num { text-align: right; white-space: nowrap; }
+#relatorio .rel-lista .vazio { color: var(--tinta-2); font-style: italic; padding: 5px 4px; }
+#relatorio .rel-lista .prio { color: #B7791F; font-weight: 700; }
+#relatorio .rel-lista tr.sintetico td { background: #F5F7FA; }
+#relatorio .rel-fonte { font-size: 8px; color: var(--tinta-2); }
+
+#relatorio .rel-grafico { border-top-color: var(--tinta); padding: 8px 16px 10px; margin-top: 10px; }
+#relatorio .rel-grafico h2 { font-size: 16px; display: block; }
+#relatorio .rel-grafico .descricao { margin: 0 0 6px; color: var(--tinta-2); font-size: 10.5px; }
+#relatorio .chaves { margin: 0 0 4px; font-size: 10px; gap: 4px 12px; }
+#relatorio .eixo { grid-template-columns: 230px 1fr 90px; gap: 12px; padding: 3px 0; }
+#relatorio .eixo-nome { font-size: 12px; line-height: 1.2; }
+#relatorio .eixo-nome small { display: inline; font-size: 10px; margin-left: 6px; }
+#relatorio .eixo-trilho { height: 13px; }
+#relatorio .eixo-valor { font-size: 14px; }
+#relatorio .fonte-linha { grid-template-columns: 230px 1fr 120px; gap: 12px; padding: 2px 0; }
+#relatorio .fonte-linha.separa { margin-top: 2px; }
+#relatorio .fonte-nome { font-size: 11.5px; line-height: 1.2; }
+#relatorio .fonte-nome small { font-size: 9.5px; }
+#relatorio .fonte-nome .miudo { font-size: 8.5px; line-height: 1.2; }
+#relatorio .fonte-nome .obs { display: none; }
+#relatorio .fonte-barra { height: 13px; }
+#relatorio .fonte-valor { font-size: 14px; }
+#relatorio .fonte-valor small { font-size: 9.5px; }
+</style>
+</head>
+<body>
+<div class="pagina">
+
+  <div class="aviso" id="aviso" hidden></div>
+
+  <header class="topo">
+    <div>
+      <h1>Avança Uberlândia</h1>
+      <p class="subtitulo">Acompanhamento semanal das obras e projetos do programa</p>
+      <p class="atualizado" id="atualizado"></p>
+    </div>
+    <div class="acoes-relatorio">
+      <span>Relatório semanal</span>
+      <div>
+        <button class="botao" id="baixar-pdf" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+          Baixar PDF
+        </button>
+        <button class="botao secundario" id="baixar-excel" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+          Baixar Excel
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Régua: quanto dos R$ 2,11 bi já virou objeto, e em que fase -->
+  <section class="regua-painel" aria-labelledby="t-regua">
+    <div class="regua-cabeca">
+      <div class="regua-total" id="t-regua"><span id="valor-programa"></span><small>valor total anunciado do programa</small></div>
+      <p class="regua-resumo" id="regua-resumo"></p>
+    </div>
+    <div id="regua"></div>
+  </section>
+
+  <div class="grade">
+    <section class="painel" aria-labelledby="t-status">
+      <h2 id="t-status">Situação dos objetos</h2>
+      <p class="descricao">Quantos objetos estão em cada fase</p>
+      <div class="rosca-bloco" id="rosca-status"></div>
+      <div class="entregas" id="entregas"></div>
+    </section>
+
+    <section class="painel" aria-labelledby="t-eixos">
+      <h2 id="t-eixos">Valor por eixo temático</h2>
+      <p class="descricao">Soma dos valores de cada eixo, dividida por fase</p>
+      <div id="eixos"></div>
+    </section>
+  </div>
+
+  <section class="painel" aria-labelledby="t-fontes" style="margin-bottom:20px">
+    <h2 id="t-fontes">Fontes de recurso</h2>
+    <p class="descricao">Recurso previsto em cada fonte do programa e quanto já está comprometido em objetos</p>
+    <div id="fontes"></div>
+    <details class="detalhes">
+      <summary>Ver valores por fase</summary>
+      <div class="rolagem"><table class="tabela-fontes" id="tabela-fontes"></table></div>
+    </details>
+    <p class="nota">Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, até que o Notion registre a divisão real.</p>
+  </section>
+
+  <section class="painel" id="secao-objetos" aria-labelledby="t-objetos">
+    <h2 id="t-objetos">Objetos do programa</h2>
+    <p class="descricao">Detalhes de cada obra e projeto, do maior para o menor valor</p>
+    <div class="controles">
+      <div class="abas" role="tablist" id="abas"></div>
+      <div class="filtros">
+        <select id="filtro-eixo" aria-label="Filtrar por eixo temático"></select>
+        <input id="busca" type="search" placeholder="Buscar obra, empresa ou local" aria-label="Buscar">
+      </div>
+    </div>
+    <div class="rolagem"><table id="tabela-objetos"></table></div>
+  </section>
+
+  <footer class="rodape">
+    <h3>Como ler os números</h3>
+    <ul>
+      <li>Contratado é o valor original do contrato. Os aditivos aparecem como um item à parte em cada fase.</li>
+      <li>Em licitação e em planejamento usam o valor estimado.</li>
+      <li>O total do programa é o valor anunciado pela Prefeitura.</li>
+      <li>Dotações do Notion que não estão entre as fontes oficiais aparecem como "Outros".</li>
+    </ul>
+  </footer>
+</div>
+
+<!-- Versão do relatório em PDF (só aparece na impressão) -->
+<div id="relatorio"></div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* =====================================================================
+   DADOS E CONFIGURAÇÃO
+   O GitHub Actions preenche os dois marcadores abaixo sempre que monta o
+   site: CONFIG vem do config.json e DADOS vem das bases do Notion.
+   (As regras de fonte de recurso e de eixo temático ficam no script
+   scripts/atualizar_dados.py e no config.json.)
+   ===================================================================== */
+const CONFIG = /*__CONFIG__*/null;
+const DADOS = /*__DADOS__*/null;
+if (!CONFIG || !DADOS) {
+  document.querySelector('.pagina').innerHTML = '<div class="modelo-vazio"><h1>Painel Avança Uberlândia</h1>'
+    + '<p>Este arquivo é o modelo do site. Os dados entram quando o GitHub Actions monta o site. Veja o README.</p></div>';
+  throw new Error('Modelo sem dados: o site é montado pelo GitHub Actions.');
+}
+
+/* ============ Fontes, total e eixos (do config.json) ============ */
+const FONTES_OFICIAIS = CONFIG.fontes.map(f => ({ nome: f.nome, disponivel: f.disponivel, obs: f.detalhe }));
+const OUTROS = 'Outros', NAO_INFORMADA = 'Não informada';
+const TOTAL_PROGRAMA = CONFIG.total_do_programa;
+const EIXOS = CONFIG.eixos.includes(OUTROS) ? CONFIG.eixos : [...CONFIG.eixos, OUTROS];
+
+// Aviso no topo: some quando o texto no config.json fica vazio
+if (CONFIG.aviso_no_topo) {
+  const aviso = document.getElementById('aviso');
+  aviso.textContent = CONFIG.aviso_no_topo;
+  aviso.hidden = false;
+}
+
+// "Partes" de cada objeto: quanto de cada fonte vai para cada eixo
+DADOS.objetos.forEach(o => {
+  if (!EIXOS.includes(o.eixo)) o.eixo = OUTROS;
+  o.fontes = o.fontes && o.fontes.length ? o.fontes : [NAO_INFORMADA];
+  o.outros = o.outros || [];
+  o.dotacao = o.dotacao || [];
+  o.partes = o.fontes.map(f => ({ eixo: o.eixo, fonte: f, valor: o.valor / o.fontes.length }));
+});
+
+// Aditivos: o valor de cada obra é o contratado original; os aditivos viram um item à parte na lista
+[['andamento', 'Aditivos de obras em andamento', 'Em andamento'], ['concluida', 'Aditivos de obras concluídas', 'Concluída']].forEach(([fase, rotulo, situacao]) => {
+  const obras = DADOS.objetos.filter(o => o.status === fase && !o.sintetico && o.aditivo > 0);
+  if (!obras.length) return;
+  const partes = obras.flatMap(o => o.fontes.map(f => ({ eixo: o.eixo, fonte: f, valor: o.aditivo / o.fontes.length })));
+  const porFonte = {};
+  partes.forEach(p => porFonte[p.fonte] = (porFonte[p.fonte] || 0) + p.valor);
+  DADOS.objetos.push({
+    status: fase, sintetico: true, nome: rotulo, processo: '', empresa: '', eixo: 'Vários',
+    valor: obras.reduce((s, o) => s + o.aditivo, 0), obras: obras.map(o => o.nome), partes,
+    fontes: Object.keys(porFonte).sort((a, b) => porFonte[b] - porFonte[a]),
+    outros: [...new Set(obras.filter(o => o.fontes.includes(OUTROS)).flatMap(o => o.outros))],
+    dotacao: [...new Set(obras.flatMap(o => o.dotacao))], situacao, avanco: null,
+    inicio: '', termino: '', conclusao: '', local: { texto: '', link: '' }, prioridade: false,
+  });
+});
+
+/* ============ Fases (nome e cor) ============ */
+const FASES = [
+  { id: 'concluida',    nome: 'Concluídas',      rotuloValor: 'Concluído',       cor: 'var(--concluida)' },
+  { id: 'andamento',    nome: 'Em andamento',    rotuloValor: 'Contratado',      cor: 'var(--andamento)' },
+  { id: 'licitacao',    nome: 'Em licitação',    rotuloValor: 'Em licitação',    cor: 'var(--licitacao)' },
+  { id: 'planejamento', nome: 'Em planejamento', rotuloValor: 'Em planejamento', cor: 'var(--planejamento)' },
+];
+
+/* ============ Formatação de números e datas ============ */
+const dec = (v, casas = 1) => v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+function reais(v) {
+  if (!v) return '—';
+  if (v >= 1e9) return 'R$ ' + dec(v / 1e9) + ' bi';
+  if (v >= 1e6) return 'R$ ' + dec(v / 1e6) + ' mi';
+  if (v >= 1e3) return 'R$ ' + dec(v / 1e3, 0) + ' mil';
+  return 'R$ ' + dec(v, 2);
+}
+const reaisOuZero = v => v ? reais(v) : 'R$ 0';
+const reaisCompleto = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const pct = (parte, total) => total ? dec(parte / total * 100) + '%' : '0%';
+function data(iso) { if (!iso) return '—'; const [a, m, d] = iso.split('-'); return `${d}/${m}/${a}`; }
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const mesAno = iso => iso ? `${MESES[+iso.slice(5, 7) - 1]}/${iso.slice(0, 4)}` : '—';          // Setembro/2026
+const mesCurto = iso => iso ? `${MESES[+iso.slice(5, 7) - 1].slice(0, 3)}/${iso.slice(0, 4)}` : '—'; // Set/2026
+const soma = lista => lista.reduce((s, o) => s + (o.valor || 0), 0);
+const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+
+const objetos = DADOS.objetos;                          // inclui o item de aditivos (entra nos valores)
+const obras = objetos.filter(o => !o.sintetico);        // só objetos reais (entra nas contagens)
+const porFase = id => objetos.filter(o => o.status === id);
+const contar = lista => lista.filter(o => !o.sintetico).length;
+// Ordena do maior para o menor valor; o item de aditivos fica sempre por último
+const ordenarPorValor = lista => lista.slice().sort((a, b) => (a.sintetico || 0) - (b.sintetico || 0) || b.valor - a.valor);
+
+/* ============ Cabeçalho ============ */
+document.getElementById('atualizado').textContent = 'Dados do Notion atualizados em ' + data(DADOS.atualizadoEm)
+  + (DADOS.atualizadoHora ? ' às ' + DADOS.atualizadoHora : '');
+document.getElementById('valor-programa').textContent = 'R$ ' + dec(TOTAL_PROGRAMA / 1e9, 2) + ' bilhões';
+
+/* ============ Régua do programa (usada na tela e no PDF) ============ */
+function rotuloEscala(v) {
+  if (v === 0) return '0';
+  if (v < 1e9) return dec(v / 1e6, 0) + ' mi';
+  return dec(v / 1e9, v % 1e9 === 0 ? 0 : v % 1e8 === 0 ? 1 : 2) + ' bi';
+}
+const milhoes = v => 'R$ ' + dec(v / 1e6, v % 1e6 ? 1 : 0) + ' mi';
+function htmlRegua(animar) {
+  const total = TOTAL_PROGRAMA, detalhado = soma(objetos);
+  const partes = FASES.map(f => ({ ...f, lista: porFase(f.id) })).map(p => ({ ...p, valor: soma(p.lista) }));
+  const barra = partes.map(p => {
+    const largura = (p.valor / total * 100) + '%';
+    return `<span style="background:${p.cor};${animar ? '' : 'width:' + largura}" ${animar ? `data-largura="${largura}"` : ''} title="${p.rotuloValor}: ${reaisCompleto(p.valor)}"></span>`;
+  }).join('');
+  let escala = '';
+  for (let v = 0; v <= total; v += 1e8) {
+    const pos = v / total * 100, maior = v % 5e8 === 0;
+    escala += `<i class="${maior ? 'maior' : ''}" style="left:${pos}%"></i>`;
+    if (maior && total - v > 2e8) escala += `<b class="${v === 0 ? 'inicio' : 'meio'}" style="left:${pos}%">${rotuloEscala(v)}</b>`;
+  }
+  escala += `<i class="maior" style="left:calc(100% - 1px)"></i><b class="fim" style="left:100%">${rotuloEscala(total)}</b>`;
+  const itens = [...partes.map(p => ({ ...p, sub: plural(contar(p.lista), 'objeto', 'objetos') })),
+    { rotuloValor: 'Ainda não detalhado', valor: total - detalhado, cor: '#C9D1DC', sub: 'sem objeto cadastrado' }];
+  const legenda = itens.map(p => `<div style="border-color:${p.cor}"><span>${p.rotuloValor}</span><strong>${reaisOuZero(p.valor)}</strong><em>${pct(p.valor, total)}</em><small>${p.sub}</small></div>`).join('');
+  return `<div class="regua"><div class="regua-barra" role="img" aria-label="${esc(partes.map(p => p.rotuloValor + ' ' + reais(p.valor)).join(', '))}">${barra}</div>
+    <div class="regua-escala" aria-hidden="true">${escala}</div></div><div class="regua-legenda">${legenda}</div>`;
+}
+function montarRegua() {
+  const detalhado = soma(objetos);
+  document.getElementById('regua-resumo').innerHTML =
+    `<strong>${obras.length} objetos</strong> cadastrados somam <strong>${reais(detalhado)}</strong>, ` +
+    `ou ${pct(detalhado, TOTAL_PROGRAMA)} do programa. O restante ainda não foi detalhado em objetos no Notion.`;
+  const alvo = document.getElementById('regua');
+  alvo.innerHTML = htmlRegua(true);
+  // anima a régua uma única vez, ao abrir a página
+  requestAnimationFrame(() => requestAnimationFrame(() =>
+    alvo.querySelectorAll('.regua-barra span').forEach(s => s.style.width = s.dataset.largura)));
+}
+
+/* ============ Gráfico de rosca ============ */
+function rosca(alvo, itens, centroValor, centroRotulo) {
+  const r = 70, circ = 2 * Math.PI * r, total = itens.reduce((s, i) => s + i.valor, 0);
+  const com = itens.filter(i => i.valor > 0).length;
+  let acumulado = 0;
+  const arcos = itens.map((it, n) => {
+    if (!it.valor) return '';
+    const tam = it.valor / total * circ, folga = com > 1 ? 2 : 0;
+    const arco = `<circle data-n="${n}" cx="95" cy="95" r="${r}" fill="none" stroke="${it.cor}" stroke-width="28"
+      stroke-dasharray="${Math.max(tam - folga, 0.1)} ${circ}" stroke-dashoffset="${-acumulado}" transform="rotate(-90 95 95)"><title>${esc(it.rotulo)}</title></circle>`;
+    acumulado += tam;
+    return arco;
+  }).join('');
+  alvo.innerHTML = `<svg class="rosca" viewBox="0 0 190 190" role="img" aria-label="${esc(itens.map(i => i.rotulo + ': ' + i.texto).join(', '))}">
+      <circle cx="95" cy="95" r="${r}" fill="none" stroke="var(--vazio)" stroke-width="28"/>${arcos}
+      <text x="95" y="96" text-anchor="middle" class="centro-valor" style="font-size:${String(centroValor).length > 4 ? 23 : 32}px">${centroValor}</text>
+      <text x="95" y="116" text-anchor="middle" class="centro-rotulo">${centroRotulo}</text></svg>
+    <ul class="legenda">${itens.map((it, n) => `
+      <li data-n="${n}"><span class="cor" style="background:${it.cor}"></span><span>${esc(it.rotulo)}</span>
+        <span class="valor">${it.texto}</span><span class="sub">${it.sub || ''}</span></li>`).join('')}</ul>`;
+  alvo.querySelectorAll('li').forEach(li => {
+    li.addEventListener('mouseenter', () => alvo.querySelectorAll('circle[data-n]').forEach(c => c.classList.toggle('apagado', c.dataset.n !== li.dataset.n)));
+    li.addEventListener('mouseleave', () => alvo.querySelectorAll('circle[data-n]').forEach(c => c.classList.remove('apagado')));
+  });
+}
+function montarStatus() {
+  const itens = FASES.map(f => {
+    const lista = porFase(f.id);
+    return { rotulo: f.nome, valor: contar(lista), cor: f.cor, texto: plural(contar(lista), 'objeto', 'objetos'), sub: reaisOuZero(soma(lista)) };
+  });
+  rosca(document.getElementById('rosca-status'), itens, obras.length, 'objetos');
+  document.querySelectorAll('#rosca-status li').forEach(li => li.style.gridTemplateColumns = '12px 1fr auto 96px');
+}
+
+/* ============ Próximas entregas (término previsto em até 90 dias) ============ */
+function entregasPrevistas() {
+  const hoje = DADOS.atualizadoEm;
+  const limite = new Date(hoje + 'T12:00:00'); limite.setDate(limite.getDate() + 90);
+  const fim = limite.toISOString().slice(0, 10);
+  return { fim, lista: porFase('andamento').filter(o => !o.sintetico && o.termino && o.termino >= hoje && o.termino <= fim)
+    .sort((a, b) => a.termino.localeCompare(b.termino) || a.nome.localeCompare(b.nome)) };
+}
+function montarEntregas() {
+  const { fim, lista } = entregasPrevistas();
+  document.getElementById('entregas').innerHTML = `<h3>Entregas previstas até ${mesAno(fim)}</h3>` + (lista.length
+    ? `<ul>${lista.slice(0, 6).map(o => `<li><span>${esc(o.nome)}${o.avanco != null ? `<small>${dec(o.avanco, o.avanco % 1 ? 1 : 0)}% executado</small>` : ''}</span><span class="situacao">${mesAno(o.termino)}</span></li>`).join('')}</ul>`
+      + (lista.length > 6 ? `<p class="nota">E mais ${lista.length - 6} na tabela abaixo.</p>` : '')
+    : '<p class="nota">Nenhuma obra com término previsto nos próximos 90 dias.</p>');
+}
+
+/* ============ Barras por eixo temático (tela e PDF) ============ */
+const chavesFases = () => `<div class="chaves">${FASES.map(f => `<span><i style="background:${f.cor}"></i>${f.nome}</span>`).join('')}</div>`;
+function resumoEixos() {
+  const eixos = Object.fromEntries(EIXOS.map(n => [n, { nome: n, total: 0, qtd: 0, fases: {} }]));
+  objetos.forEach(o => {
+    if (!o.sintetico) eixos[o.eixo].qtd++;
+    o.partes.forEach(p => { const e = eixos[p.eixo]; e.total += p.valor; e.fases[o.status] = (e.fases[o.status] || 0) + p.valor; });
+  });
+  return Object.values(eixos).sort((a, b) => (a.nome === 'Outros') - (b.nome === 'Outros') || b.total - a.total);
+}
+function htmlEixos() {
+  const lista = resumoEixos();
+  const maior = Math.max(...lista.map(e => e.total), 1);
+  return chavesFases() + lista.map(e => `
+    <div class="eixo">
+      <div class="eixo-nome">${esc(e.nome)}<small>${plural(e.qtd, 'objeto', 'objetos')}</small></div>
+      <div class="eixo-trilho">${FASES.map(f => e.fases[f.id] ? `<span style="width:${e.fases[f.id] / maior * 100}%;background:${f.cor}" title="${f.nome}: ${reaisCompleto(e.fases[f.id])}"></span>` : '').join('')}</div>
+      <div class="eixo-valor">${e.total ? reais(e.total) : '<span class="situacao">sem valor</span>'}</div>
+    </div>`).join('');
+}
+
+/* ============ Fontes de recurso (tela e PDF) ============ */
+function resumoFontes() {
+  const linhas = {};
+  const linha = nome => linhas[nome] ??= { nome, disponivel: null, concluida: 0, andamento: 0, licitacao: 0, planejamento: 0, outros: new Set() };
+  FONTES_OFICIAIS.forEach(f => Object.assign(linha(f.nome), { disponivel: f.disponivel, obs: f.obs, oficial: true }));
+  linha(OUTROS); linha(NAO_INFORMADA);
+  objetos.forEach(o => o.partes.forEach(p => {
+    linha(p.fonte)[o.status] += p.valor;
+    if (p.fonte === OUTROS) o.outros.forEach(n => linhas[OUTROS].outros.add(n));
+  }));
+  return [...FONTES_OFICIAIS.map(f => linhas[f.nome]), linhas[OUTROS], linhas[NAO_INFORMADA]].map(l => ({
+    ...l, contratado: l.concluida + l.andamento, comprometido: l.concluida + l.andamento + l.licitacao + l.planejamento,
+  }));
+}
+function htmlFontes() {
+  const linhas = resumoFontes();
+  const escala = Math.max(...linhas.map(l => Math.max(l.disponivel || 0, l.comprometido)));
+  const chaves = `<div class="chaves">${FASES.map(f => `<span><i style="background:${f.cor}"></i>${f.rotuloValor}</span>`).join('')}<span><i class="saldo"></i>Saldo previsto</span></div>`;
+  return chaves + linhas.map(l => {
+    const nome = l.nome === NAO_INFORMADA ? 'Fonte não informada' : l.nome;
+    const sub = l.oficial ? `${milhoes(l.disponivel)} previstos${l.obs ? `<span class="obs"> (${l.obs})</span>` : ''}`
+      : l.nome === OUTROS ? `<span class="miudo">${esc([...l.outros].sort().join(', ')) || 'nenhuma'}</span>` : 'dotação em branco no Notion';
+    const segs = FASES.map(f => l[f.id] ? `<span style="width:${l[f.id] / escala * 100}%;background:${f.cor}" title="${f.rotuloValor}: ${reaisCompleto(l[f.id])}"></span>` : '').join('');
+    const valor = l.oficial
+      ? `${reaisOuZero(l.contratado)}<small>contratado (${pct(l.contratado, l.disponivel)})</small>`
+      : `${reaisOuZero(l.contratado)}<small>contratado</small>`;
+    return `<div class="fonte-linha${l.nome === OUTROS ? ' separa' : ''}">
+      <div class="fonte-nome${l.oficial ? '' : ' indefinido'}">${esc(nome)}<small>${sub}</small></div>
+      <div class="fonte-barra">${l.disponivel ? `<div class="fonte-disp" style="width:${l.disponivel / escala * 100}%" title="Previsto: ${reaisCompleto(l.disponivel)}"></div>` : ''}<div class="fonte-segs">${segs}</div></div>
+      <div class="fonte-valor">${valor}</div></div>`;
+  }).join('');
+}
+function montarFontes() {
+  document.getElementById('fontes').innerHTML = htmlFontes();
+  const linhas = resumoFontes();
+  const tot = k => linhas.reduce((s, l) => s + (l[k] || 0), 0);
+  const saldo = l => l.disponivel ? l.disponivel - l.comprometido : null;
+  const td = v => `<td class="num">${v == null ? '' : reais(v)}</td>`;
+  document.getElementById('tabela-fontes').innerHTML = `
+    <thead><tr><th>Fonte</th><th class="num">Previsto</th><th class="num">Contratado</th><th class="num">Em licitação</th><th class="num">Em planejamento</th><th class="num">Saldo não comprometido</th></tr></thead>
+    <tbody>${linhas.map(l => `<tr><td${l.oficial ? '' : ' class="indefinido"'}>${l.nome === NAO_INFORMADA ? 'Fonte não informada' : esc(l.nome)}</td>
+      ${td(l.disponivel)}${td(l.contratado)}${td(l.licitacao)}${td(l.planejamento)}${td(saldo(l))}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td>${td(tot('disponivel'))}${td(tot('contratado'))}${td(tot('licitacao'))}${td(tot('planejamento'))}${td(linhas.reduce((s, l) => s + (saldo(l) || 0), 0))}</tr></tfoot>`;
+}
+
+/* ============ Tabela de objetos (abas, filtro e busca) ============ */
+const colLocal = o => o.local.texto
+  ? (o.local.link ? `<a href="${esc(o.local.link)}" target="_blank" rel="noopener">${esc(o.local.texto)}</a>` : esc(o.local.texto))
+  : '—';
+const colObjeto = (o, sub) => `<div class="obj-nome">${esc(o.nome)}${o.prioridade ? '<span class="selo">Prioritário</span>' : ''}</div>${sub ? `<div class="obj-sub">${sub}</div>` : ''}`;
+const colFonte = o => o.fontes.map(f => f === NAO_INFORMADA ? '<span class="indefinido">Não informada</span>'
+  : f === OUTROS ? `Outros <span class="miudo">(${esc(o.outros.join(', '))})</span>` : esc(f)).join(', ');
+const textoFonte = o => o.fontes.map(f => f === OUTROS ? `Outros (${o.outros.join(', ')})` : f).join(', ');
+const colAvanco = o => o.sintetico ? '—' : o.avanco != null && !(o.avanco === 0 && o.situacao !== 'Em andamento')
+  ? `<div class="avanco"><div class="avanco-trilho"><span style="width:${Math.min(o.avanco, 100)}%"></span></div>${dec(o.avanco, o.avanco % 1 ? 1 : 0)}%</div>`
+    + (o.situacao !== 'Em andamento' ? `<div class="situacao">${esc(o.situacao)}</div>` : '')
+  : `<span class="situacao">${o.situacao !== 'Em andamento' ? esc(o.situacao) : 'Sem medição'}</span>`;
+const valorCel = o => o.valor ? `<span title="${reaisCompleto(o.valor)}">${reais(o.valor)}</span>` : '<span class="situacao">A estimar</span>';
+
+const COLUNAS = {
+  andamento: [
+    ['Objeto', o => colObjeto(o, o.sintetico ? plural(o.obras.length, 'obra com aditivo', 'obras com aditivo') : [o.processo, o.empresa].filter(Boolean).map(esc).join('<br>'))],
+    ['Eixo', o => esc(o.eixo), 'col-eixo'],
+    ['Contratado', valorCel, 'num'],
+    ['Início (OS)', o => data(o.inicio), 'num'],
+    ['Previsão de fim', o => mesAno(o.termino), 'num'],
+    ['Avanço físico', colAvanco],
+    ['Fonte', colFonte, 'col-fonte'],
+    ['Local', colLocal, 'col-local'],
+  ],
+  licitacao: [
+    ['Objeto', o => colObjeto(o, esc(o.processo))],
+    ['Eixo', o => esc(o.eixo), 'col-eixo'],
+    ['Valor estimado', valorCel, 'num'],
+    ['Situação da licitação', o => esc(o.situacao) || '—'],
+    ['Fonte', colFonte, 'col-fonte'],
+    ['Local', colLocal, 'col-local'],
+  ],
+  planejamento: [
+    ['Objeto', o => colObjeto(o)],
+    ['Eixo', o => esc(o.eixo), 'col-eixo'],
+    ['Valor estimado', valorCel, 'num'],
+    ['Documentos prontos', o => `<div class="docs">${Object.entries(o.preparo || {}).map(([k, v]) => `<span class="${v ? 'ok' : ''}" title="${k}: ${v ? 'pronto' : 'pendente'}">${k}</span>`).join('')}</div>`],
+    ['Fonte', colFonte, 'col-fonte'],
+    ['Local', colLocal, 'col-local'],
+  ],
+  concluida: [
+    ['Objeto', o => colObjeto(o, o.sintetico ? plural(o.obras.length, 'obra com aditivo', 'obras com aditivo') : '')],
+    ['Eixo', o => esc(o.eixo), 'col-eixo'], ['Valor', valorCel, 'num'],
+    ['Conclusão', o => mesAno(o.conclusao || o.termino), 'num'], ['Fonte', colFonte, 'col-fonte'], ['Local', colLocal, 'col-local'],
+  ],
+};
+
+let abaAtual = 'andamento';
+function montarControles() {
+  const ordemAbas = ['andamento', 'licitacao', 'planejamento', 'concluida'].map(id => FASES.find(f => f.id === id));
+  document.getElementById('abas').innerHTML = ordemAbas.map(f =>
+    `<button class="aba" role="tab" type="button" data-fase="${f.id}" aria-selected="${f.id === abaAtual}"><i style="background:${f.cor}"></i>${f.nome} (${contar(porFase(f.id))})</button>`).join('');
+  document.querySelectorAll('.aba').forEach(b => b.addEventListener('click', () => {
+    abaAtual = b.dataset.fase;
+    document.querySelectorAll('.aba').forEach(x => x.setAttribute('aria-selected', x === b));
+    montarTabela();
+  }));
+  const eixos = EIXOS.filter(e => obras.some(o => o.eixo === e));
+  const sel = document.getElementById('filtro-eixo');
+  sel.innerHTML = '<option value="">Todos os eixos</option>' + eixos.map(e => `<option>${esc(e)}</option>`).join('');
+  sel.addEventListener('change', montarTabela);
+  document.getElementById('busca').addEventListener('input', montarTabela);
+}
+function htmlTabela(fase, lista, msgVazio) {
+  const cols = COLUNAS[fase];
+  const cab = `<thead><tr>${cols.map(([t, , c]) => `<th class="${c || ''}">${t}</th>`).join('')}</tr></thead>`;
+  if (!lista.length) return cab + `<tbody><tr><td colspan="${cols.length}" class="vazio-msg">${msgVazio}</td></tr></tbody>`;
+  return cab + `<tbody>${lista.map(o => `<tr${o.sintetico ? ' class="sintetico"' : ''}>${cols.map(([, f, c]) => `<td class="${c || ''}">${f(o)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+const MSG_SEM_CONCLUIDAS = 'Nenhuma obra concluída cadastrada ainda. A base de obras concluídas será ligada na etapa de funcionalidades.';
+function montarTabela() {
+  const eixo = document.getElementById('filtro-eixo').value;
+  const termo = document.getElementById('busca').value.trim().toLowerCase();
+  const lista = ordenarPorValor(porFase(abaAtual)
+    .filter(o => !eixo || o.eixo === eixo)
+    .filter(o => !termo || [o.nome, o.empresa, o.local.texto, o.processo].join(' ').toLowerCase().includes(termo)));
+  const msg = porFase(abaAtual).length ? 'Nenhum objeto encontrado com esses filtros.'
+    : abaAtual === 'concluida' ? MSG_SEM_CONCLUIDAS : 'Nenhum objeto nesta fase.';
+  document.getElementById('tabela-objetos').innerHTML = htmlTabela(abaAtual, lista, msg);
+}
+
+/* =====================================================================
+   RELATÓRIO SEMANAL
+   Nada é guardado em servidor: o arquivo é montado no navegador,
+   na hora do clique, e vai direto para o computador de quem clicou.
+   ===================================================================== */
+function semanaDoRelatorio() {   // de segunda a domingo da semana da atualização
+  const d = new Date(DADOS.atualizadoEm + 'T12:00:00');
+  const seg = new Date(d); seg.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+  const iso = x => x.toISOString().slice(0, 10);
+  return { inicio: iso(seg), fim: iso(dom) };
+}
+const nomeArquivo = () => 'Relatorio_Avanca_Uberlandia_' + DADOS.atualizadoEm;
+
+/* ---------- PDF: duas folhas A4 deitadas ---------- */
+function montarRelatorio() {
+  const s = semanaDoRelatorio();
+  const semana = `Semana de ${data(s.inicio)} a ${data(s.fim)}`;
+  const topo = (titulo, pagina) => `<header class="rel-topo">
+      <div><h1>Avança Uberlândia</h1><p class="rel-titulo">${titulo}</p></div>
+      <p class="rel-data">${semana}<br>Dados do Notion de ${data(DADOS.atualizadoEm)} | Página ${pagina} de 2</p></header>`;
+  const detalhado = soma(objetos);
+
+  // Cartões de objetos por situação
+  const tabela = (cabecalho, lista, linha, vazio) => `<table class="rel-lista"><thead><tr>${cabecalho.map(([t, num]) => `<th class="${num ? 'num' : ''}">${t}</th>`).join('')}</tr></thead>
+    <tbody>${lista.length ? lista.map(linha).join('') : `<tr><td colspan="${cabecalho.length}" class="vazio">${vazio}</td></tr>`}</tbody></table>`;
+  const nome = o => o.sintetico
+    ? `<i>${esc(o.nome)}</i> <span class="rel-fonte">(${plural(o.obras.length, 'obra', 'obras')}; fonte: ${esc(textoFonte(o))})</span>`
+    : `${esc(o.nome)}${o.prioridade ? ' <span class="prio" title="Prioritário">*</span>' : ''}`;
+  const cartao = (texto, lista, cor, conteudo) => `<div class="rel-cartao" style="border-top-color:${cor}">
+    <h2>${texto}<small>${plural(contar(lista), 'objeto', 'objetos')}, ${reaisOuZero(soma(lista))}</small></h2>${conteudo}</div>`;
+  const avanco = o => o.avanco != null ? dec(o.avanco, o.avanco % 1 ? 1 : 0) + '%' : '—';
+  const estimado = o => `<tr><td>${nome(o)}</td><td class="num">${o.valor ? reais(o.valor) : 'A estimar'}</td></tr>`;
+  const [concl, anda, lici, plan] = ['concluida', 'andamento', 'licitacao', 'planejamento'].map(id => ordenarPorValor(porFase(id)));
+
+  // Folha 1: régua do programa e todos os objetos, por situação
+  const folha1 = `<section class="folha">
+    ${topo('Relatório semanal do programa', 1)}
+    <div class="rel-bloco">
+      <div class="rel-regua-cabeca"><strong>R$ ${dec(TOTAL_PROGRAMA / 1e9, 2)} bilhões</strong>
+        <span><b>${obras.length} objetos</b> cadastrados somam <b>${reais(detalhado)}</b> (${pct(detalhado, TOTAL_PROGRAMA)} do programa)</span></div>
+      ${htmlRegua(false)}
+    </div>
+    <div class="rel-listas">
+      <div class="rel-coluna">
+        ${cartao('Concluídos', concl, 'var(--concluida)', tabela([['Obra'], ['Valor', 1], ['Conclusão', 1]], concl,
+          o => `<tr><td>${nome(o)}</td><td class="num">${reais(o.valor)}</td><td class="num">${mesCurto(o.conclusao || o.termino)}</td></tr>`,
+          'Nenhuma obra concluída cadastrada ainda.'))}
+        ${cartao('Em andamento', anda, 'var(--andamento)', tabela([['Obra'], ['Contratado', 1], ['Avanço', 1], ['Previsão', 1]], anda,
+          o => `<tr${o.sintetico ? ' class="sintetico"' : ''}><td>${nome(o)}</td><td class="num">${reais(o.valor)}</td><td class="num">${o.sintetico ? '' : avanco(o)}</td><td class="num">${o.sintetico ? '' : mesCurto(o.termino)}</td></tr>`,
+          'Nenhuma obra em andamento.'))}
+      </div>
+      <div class="rel-coluna">
+        ${cartao('Em licitação', lici, 'var(--licitacao)', tabela([['Objeto'], ['Estimado', 1]], lici, estimado, 'Nenhum objeto em licitação.'))}
+        ${cartao('Em planejamento', plan, 'var(--planejamento)', tabela([['Objeto'], ['Estimado', 1]], plan, estimado, 'Nenhum objeto em planejamento.'))}
+      </div>
+    </div>
+    <p class="rel-nota">* Objeto prioritário. Listas do maior para o menor valor. Contratado é o valor original do contrato; os aditivos aparecem numa linha própria.</p>
+  </section>`;
+
+  // Folha 2: eixos temáticos e fontes de recurso
+  const folha2 = `<section class="folha">
+    ${topo('Eixos temáticos e fontes de recurso', 2)}
+    <div class="rel-cartao rel-grafico"><h2>Eixos temáticos</h2><p class="descricao">Valor de cada eixo, dividido por fase</p>${htmlEixos()}</div>
+    <div class="rel-cartao rel-grafico"><h2>Fontes de recurso</h2><p class="descricao">Contratado, em licitação e em planejamento em cada fonte, sobre o recurso previsto</p>${htmlFontes()}</div>
+    <p class="rel-nota">Em licitação e em planejamento, valor estimado. Objetos com mais de uma fonte têm o valor dividido igualmente entre elas.</p>
+  </section>`;
+
+  document.getElementById('relatorio').innerHTML = folha1 + folha2;
+}
+// Garante que cada folha caiba numa página: se passar da altura útil, reduz a escala da folha
+function ajustarRelatorio() {
+  const alturaUtil = 190 * 96 / 25.4 - 6;   // A4 deitada (210 mm) menos as margens de 10 mm, em pixels
+  document.querySelectorAll('#relatorio .folha').forEach(f => {
+    f.style.zoom = ''; f.style.width = '';
+    const altura = f.getBoundingClientRect().height;
+    if (altura > alturaUtil) {
+      const escala = Math.max(0.7, alturaUtil / altura);
+      f.style.zoom = escala.toFixed(3);
+      f.style.width = (277 / escala).toFixed(1) + 'mm';   // ocupa a largura toda, mesmo reduzida
+    }
+  });
+}
+window.addEventListener('beforeprint', ajustarRelatorio);
+
+document.getElementById('baixar-pdf').addEventListener('click', () => {
+  const titulo = document.title;
+  document.title = nomeArquivo();   // o navegador usa o título como nome do arquivo PDF
+  window.addEventListener('afterprint', () => document.title = titulo, { once: true });
+  window.print();
+});
+
+/* ---------- Excel: gera o .xlsx sem biblioteca externa ---------- */
+const Excel = (() => {
+  const ESTILO = { padrao: 0, cabecalho: 1, cabecalhoNum: 2, banda: 3, nota: 4, subtitulo: 5, texto: 6, moeda: 7, data: 8, mes: 9,
+    pct: 10, inteiro: 11, link: 12, totalTexto: 13, totalMoeda: 14, totalInteiro: 15, totalPct: 16, rotulo: 17, filtro: 18, centro: 19 };
+  const xml = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+                            .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  const letra = n => { let s = ''; n++; while (n) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const serial = iso => { const [a, m, d] = iso.split('-').map(Number); return (Date.UTC(a, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000; };
+
+  // Uma célula pode ser: texto, número, ou { v: valor, f: fórmula, s: estilo }
+  function celula(ref, c) {
+    if (c == null) return '';
+    if (typeof c !== 'object') c = { v: c };
+    const s = ESTILO[c.s || (typeof c.v === 'number' ? 'inteiro' : 'texto')];
+    if (c.f) return `<c r="${ref}" s="${s}"><f>${xml(c.f)}</f></c>`;
+    if (c.v == null || c.v === '') return `<c r="${ref}" s="${s}"/>`;
+    if (c.s === 'data' || c.s === 'mes') return `<c r="${ref}" s="${s}"><v>${serial(c.v)}</v></c>`;
+    if (typeof c.v === 'number') return `<c r="${ref}" s="${s}"><v>${/oeda/.test(c.s) ? Math.round(c.v * 100) / 100 : c.v}</v></c>`;
+    return `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xml(c.v)}</t></is></c>`;
+  }
+
+  function planilha(aba, i) {
+    let prioridade = 1;
+    const linhas = aba.linhas.map((l, n) => {
+      const alt = aba.alturas && aba.alturas[n + 1];
+      return `<row r="${n + 1}"${alt ? ` ht="${alt}" customHeight="1"` : ''}>${l.map((c, j) => celula(letra(j) + (n + 1), c)).join('')}</row>`;
+    }).join('');
+    const pane = aba.congelar ? `<pane ySplit="${aba.congelar}" topLeftCell="A${aba.congelar + 1}" activePane="bottomLeft" state="frozen"/>` : '';
+    const cf = [
+      ...(aba.barras || []).map(ref => `<conditionalFormatting sqref="${ref}"><cfRule type="dataBar" priority="${prioridade++}"><dataBar><cfvo type="num" val="0"/><cfvo type="num" val="1"/><color rgb="FF2F6FA3"/></dataBar></cfRule></conditionalFormatting>`),
+      ...(aba.zebra || []).map(ref => `<conditionalFormatting sqref="${ref}"><cfRule type="expression" dxfId="0" priority="${prioridade++}"><formula>MOD(ROW(),2)=0</formula></cfRule></conditionalFormatting>`),
+    ].join('');
+    const listas = aba.listas && aba.listas.length
+      ? `<dataValidations count="${aba.listas.length}">${aba.listas.map(l => `<dataValidation type="list" allowBlank="0" showInputMessage="1" showErrorMessage="1" promptTitle="Filtro" prompt="Escolha um item da lista" sqref="${l.ref}"><formula1>${xml(l.origem)}</formula1></dataValidation>`).join('')}</dataValidations>` : '';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheetPr>${aba.cor ? `<tabColor rgb="${aba.cor}"/>` : ''}<pageSetUpPr fitToPage="1"/></sheetPr>
+<sheetViews><sheetView ${i === 0 ? 'tabSelected="1" ' : ''}showGridLines="0" workbookViewId="0">${pane}</sheetView></sheetViews>
+<sheetFormatPr defaultRowHeight="15"/>
+<cols>${aba.larguras.map((w, j) => `<col min="${j + 1}" max="${j + 1}" width="${w}" customWidth="1"/>`).join('')}</cols>
+<sheetData>${linhas}</sheetData>
+${aba.filtro ? `<autoFilter ref="${aba.filtro}"/>` : ''}
+${aba.mesclar && aba.mesclar.length ? `<mergeCells count="${aba.mesclar.length}">${aba.mesclar.map(m => `<mergeCell ref="${m}"/>`).join('')}</mergeCells>` : ''}
+${cf}${listas}
+<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>
+<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>
+</worksheet>`;
+  }
+
+  const fonte = (extra = '', cor = 'FF1F2A44', tam = 10) => `<font>${extra}<sz val="${tam}"/><color rgb="${cor}"/><name val="Arial"/><family val="2"/></font>`;
+  const xf = (num, font, fill, borda, alinha = '') =>
+    `<xf numFmtId="${num}" fontId="${font}" fillId="${fill}" borderId="${borda}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${alinha ? `<alignment ${alinha}/>` : ''}</xf>`;
+  const ESTILOS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="4"><numFmt numFmtId="164" formatCode="&quot;R$&quot;\\ #,##0"/><numFmt numFmtId="165" formatCode="dd/mm/yyyy"/><numFmt numFmtId="166" formatCode="0.0%"/><numFmt numFmtId="167" formatCode="mmmm/yyyy"/></numFmts>
+<fonts count="7">${fonte()}${fonte('<b/>', 'FFFFFFFF')}${fonte('<b/>', 'FFFFFFFF', 15)}${fonte('<b/>')}${fonte('', 'FF6B7280', 9)}${fonte('<b/>', 'FF16213E', 12)}${fonte('<u/>', 'FF2F6FA3')}</fonts>
+<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF16213E"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFE8EDF4"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFDF1D6"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left/><right/><top/><bottom style="thin"><color rgb="FFE1E6ED"/></bottom><diagonal/></border>
+<border><left style="thin"><color rgb="FFE9A92B"/></left><right style="thin"><color rgb="FFE9A92B"/></right><top style="thin"><color rgb="FFE9A92B"/></top><bottom style="thin"><color rgb="FFE9A92B"/></bottom><diagonal/></border>
+<border><left/><right/><top style="thin"><color rgb="FF16213E"/></top><bottom style="thin"><color rgb="FF16213E"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="20">
+${xf(0, 0, 0, 0)}
+${xf(0, 1, 2, 0, 'vertical="center" wrapText="1" indent="1"')}
+${xf(0, 1, 2, 0, 'horizontal="right" vertical="center" wrapText="1"')}
+${xf(0, 2, 2, 0, 'vertical="center" indent="1"')}
+${xf(0, 4, 0, 0, 'vertical="center"')}
+${xf(0, 5, 0, 0, 'vertical="bottom"')}
+${xf(0, 0, 0, 1, 'vertical="top" wrapText="1" indent="1"')}
+${xf(164, 0, 0, 1, 'vertical="top"')}
+${xf(165, 0, 0, 1, 'horizontal="center" vertical="top"')}
+${xf(167, 0, 0, 1, 'horizontal="center" vertical="top"')}
+${xf(166, 0, 0, 1, 'vertical="top"')}
+${xf(3, 0, 0, 1, 'vertical="top"')}
+${xf(0, 6, 0, 1, 'vertical="top"')}
+${xf(0, 3, 3, 3, 'vertical="center" indent="1"')}
+${xf(164, 3, 3, 3, 'vertical="center"')}
+${xf(3, 3, 3, 3, 'vertical="center"')}
+${xf(166, 3, 3, 3, 'vertical="center"')}
+${xf(0, 3, 0, 0, 'vertical="center"')}
+${xf(0, 3, 4, 2, 'vertical="center" indent="1"')}
+${xf(0, 0, 0, 1, 'horizontal="center" vertical="top"')}
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+<dxfs count="1"><dxf><fill><patternFill patternType="solid"><fgColor rgb="FFF5F7FA"/><bgColor rgb="FFF5F7FA"/></patternFill></fill></dxf></dxfs>
+</styleSheet>`;
+
+  // Compacta os arquivos no formato ZIP (um .xlsx é um ZIP com arquivos XML dentro)
+  const TAB = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = TAB[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function cabecalhoZip(campos, tamanho) {
+    const v = new DataView(new ArrayBuffer(tamanho));
+    campos.forEach(([pos, valor, bytes]) => bytes === 4 ? v.setUint32(pos, valor, true) : v.setUint16(pos, valor, true));
+    return new Uint8Array(v.buffer);
+  }
+  function zip(arquivos) {
+    const enc = new TextEncoder(), agora = new Date(), partes = [], central = [];
+    const hora = (agora.getHours() << 11) | (agora.getMinutes() << 5) | (agora.getSeconds() >> 1);
+    const dia = ((agora.getFullYear() - 1980) << 9) | ((agora.getMonth() + 1) << 5) | agora.getDate();
+    let pos = 0;
+    for (const a of arquivos) {
+      const nome = enc.encode(a.nome), dados = enc.encode(a.texto), crc = crc32(dados), n = dados.length;
+      partes.push(cabecalhoZip([[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, hora, 2], [12, dia, 2],
+        [14, crc, 4], [18, n, 4], [22, n, 4], [26, nome.length, 2], [28, 0, 2]], 30), nome, dados);
+      central.push(cabecalhoZip([[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, hora, 2], [14, dia, 2],
+        [16, crc, 4], [20, n, 4], [24, n, 4], [28, nome.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, pos, 4]], 46), nome);
+      pos += 30 + nome.length + n;
+    }
+    const tamCentral = central.reduce((s, p) => s + p.length, 0);
+    const fim = cabecalhoZip([[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, arquivos.length, 2], [10, arquivos.length, 2],
+      [12, tamCentral, 4], [16, pos, 4], [20, 0, 2]], 22);
+    return [...partes, ...central, fim];
+  }
+
+  function gerar(abas, nomesDefinidos = []) {
+    const cab = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+    const REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+    const absoluto = ref => ref.replace(/([A-Z]+)(\d+)/g, '$$$1$$$2');
+    const nomes = [
+      ...nomesDefinidos.map(([n, ref]) => `<definedName name="${n}">${xml(ref)}</definedName>`),
+      ...abas.map((a, i) => a.filtro ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${xml(a.nome)}'!${absoluto(a.filtro)}</definedName>` : ''),
+    ].join('');
+    const arquivos = [
+      { nome: '[Content_Types].xml', texto: `${cab}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${abas.map((a, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>` },
+      { nome: '_rels/.rels', texto: `${cab}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${REL}/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+      { nome: 'xl/workbook.xml', texto: `${cab}<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${REL}"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${abas.map((a, i) => `<sheet name="${xml(a.nome)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets>${nomes ? `<definedNames>${nomes}</definedNames>` : ''}<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>` },
+      { nome: 'xl/_rels/workbook.xml.rels', texto: `${cab}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${abas.map((a, i) => `<Relationship Id="rId${i + 1}" Type="${REL}/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${abas.length + 1}" Type="${REL}/styles" Target="styles.xml"/></Relationships>` },
+      { nome: 'xl/styles.xml', texto: ESTILOS_XML },
+      ...abas.map((a, i) => ({ nome: `xl/worksheets/sheet${i + 1}.xml`, texto: planilha(a, i) })),
+    ];
+    return new Blob(zip(arquivos), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  return { gerar, letra };
+})();
+
+// Monta o conteúdo das abas da planilha
+function abasDoRelatorio() {
+  const L = Excel.letra;
+  const s = semanaDoRelatorio();
+  const periodo = `Semana de ${data(s.inicio)} a ${data(s.fim)}. Dados do Notion de ${data(DADOS.atualizadoEm)}.`;
+  const nomeFase = id => FASES.find(f => f.id === id).nome;
+  const fonteTxt = textoFonte;
+  const mapa = o => o.local.link ? { f: `HYPERLINK("${o.local.link}","Abrir mapa")`, s: 'link' } : { v: '', s: 'texto' };
+  const localTxt = o => o.local.texto === 'Ver no mapa' ? '' : o.local.texto;
+  const sim = b => ({ v: b ? 'Sim' : 'Não', s: 'centro' });
+  const cabecalho = (nomes, numericas = []) => nomes.map((v, j) => ({ v, s: numericas.includes(j) ? 'cabecalhoNum' : 'cabecalho' }));
+  const banda = (texto, n) => [{ v: texto, s: 'banda' }, ...Array(n - 1).fill({ v: '', s: 'banda' })];
+  const vazio = (v = '') => ({ v, s: 'texto' });
+
+  /* ----- Aba Base (alimenta os filtros do Resumo) ----- */
+  // Colunas: A Objeto, B Tipo, C Fase, D Eixo, E Fontes, F "Todas as fontes", G em diante uma coluna por fonte; S lista de eixos
+  const colunasFonte = ['Todas as fontes', ...FONTES_OFICIAIS.map(f => f.nome), OUTROS, NAO_INFORMADA];
+  const colDaFonte = nome => L(5 + colunasFonte.indexOf(nome));
+  const ultimaCol = L(4 + colunasFonte.length);
+  const linhaBase = (nome, tipo, fase, eixo, fontes, valor) => [vazio(nome), vazio(tipo), vazio(fase), vazio(eixo), vazio(';' + fontes.join(';') + ';'),
+    { v: valor, s: 'moeda' }, ...colunasFonte.slice(1).map(f => ({ v: fontes.includes(f) ? valor / fontes.length : 0, s: 'moeda' }))];
+  const B = [banda('Base de dados do Resumo', 5 + colunasFonte.length), [{ v: periodo, s: 'nota' }], [],
+    [...cabecalho(['Objeto', 'Tipo', 'Fase', 'Eixo', 'Fontes', ...colunasFonte], colunasFonte.map((_, k) => 5 + k)), null, null, { v: 'Lista de eixos', s: 'cabecalho' }]];
+  ['concluida', 'andamento', 'licitacao', 'planejamento'].flatMap(id => ordenarPorValor(porFase(id))).filter(o => !o.sintetico)
+    .forEach(o => B.push(linhaBase(o.nome, 'Objeto', nomeFase(o.status), o.eixo, o.fontes, o.valor)));
+  obras.filter(o => (o.status === 'andamento' || o.status === 'concluida') && o.aditivo > 0)
+    .forEach(o => B.push(linhaBase('Aditivo: ' + o.nome, 'Aditivo', nomeFase(o.status), o.eixo, o.fontes, o.aditivo)));
+  const ultima = Math.max(B.length, 5);
+  while (B.length < 5 + EIXOS.length) B.push([]);
+  ['Todos os eixos', ...EIXOS].forEach((e, k) => { const r = 4 + k; while (B[r].length < 18) B[r].push(null); B[r][18] = vazio(e); });
+  const nomes = [
+    ['Base_Tipo', `Base!$B$5:$B$${ultima}`], ['Base_Fase', `Base!$C$5:$C$${ultima}`], ['Base_Eixo', `Base!$D$5:$D$${ultima}`],
+    ['Base_Fontes', `Base!$E$5:$E$${ultima}`], ['Base_Valores', `Base!$F$5:$${ultimaCol}$${ultima}`],
+    ['Base_Cabecalhos', `Base!$F$4:$${ultimaCol}$4`], ['Base_Valor', `Base!$F$5:$F$${ultima}`],
+  ];
+  const colBase = nome => `Base!$${colDaFonte(nome)}$5:$${colDaFonte(nome)}$${ultima}`;
+
+  /* ----- Aba Resumo (com filtros) ----- */
+  const eixoCrit = 'IF($B$5="Todos os eixos","*",$B$5)';
+  const fonteCrit = 'IF($B$6="Todas as fontes","*","*;"&$B$6&";*")';
+  const colFonte = 'INDEX(Base_Valores,0,MATCH($B$6,Base_Cabecalhos,0))';
+  const R = [], mesclar = ['A1:G1', 'A2:G2', 'B5:C5', 'B6:C6'], alturas = { 1: 32, 5: 22, 6: 22 };
+  const add = linha => { R.push(linha); return R.length; };
+  add(banda('Relatório semanal Avança Uberlândia', 7));
+  add([{ v: periodo, s: 'nota' }]);
+  add([]);
+  add([{ v: 'Filtros', s: 'subtitulo' }]);
+  add([{ v: 'Eixo temático', s: 'rotulo' }, { v: 'Todos os eixos', s: 'filtro' }, { v: '', s: 'filtro' }]);
+  add([{ v: 'Fonte de recurso', s: 'rotulo' }, { v: 'Todas as fontes', s: 'filtro' }, { v: '', s: 'filtro' }]);
+  add([]);
+
+  // Objetos por fase (usa os dois filtros)
+  add([{ v: 'Objetos por fase', s: 'subtitulo' }]);
+  alturas[add(cabecalho(['Fase', 'Objetos', 'Valor', '% do valor'], [1, 2, 3]))] = 24;
+  const iniFase = R.length + 1, totFase = iniFase + 4;
+  [['concluida', 'Concluídas'], ['andamento', 'Em andamento (contratado)'], ['licitacao', 'Em licitação (estimado)'], ['planejamento', 'Em planejamento (estimado)']]
+    .forEach(([id, rotulo], k) => add([vazio(rotulo),
+      { f: `COUNTIFS(Base_Tipo,"Objeto",Base_Fase,"${nomeFase(id)}",Base_Eixo,${eixoCrit},Base_Fontes,${fonteCrit})`, s: 'inteiro' },
+      { f: `SUMIFS(${colFonte},Base_Fase,"${nomeFase(id)}",Base_Eixo,${eixoCrit})`, s: 'moeda' },
+      { f: `IF($C$${totFase}=0,0,C${iniFase + k}/$C$${totFase})`, s: 'pct' }]));
+  add([{ v: 'Total', s: 'totalTexto' }, { f: `SUM(B${iniFase}:B${totFase - 1})`, s: 'totalInteiro' }, { f: `SUM(C${iniFase}:C${totFase - 1})`, s: 'totalMoeda' }, { f: `IF(C${totFase}=0,0,1)`, s: 'totalPct' }]);
+  add([]);
+
+  // Fontes de recurso (usa só o filtro de eixo)
+  add([{ v: 'Fontes de recurso', s: 'subtitulo' }]);
+  alturas[add(cabecalho(['Fonte', 'Previsto', 'Contratado', 'Em licitação', 'Em planejamento', 'Saldo não comprometido', '% contratado'], [1, 2, 3, 4, 5, 6]))] = 30;
+  const iniFonte = R.length + 1;
+  const somaFase = (nome, fases) => fases.map(f => `SUMIFS(${colBase(nome)},Base_Fase,"${nomeFase(f)}",Base_Eixo,${eixoCrit})`).join('+');
+  [...FONTES_OFICIAIS, { nome: OUTROS }, { nome: NAO_INFORMADA }].forEach(f => {
+    const r = R.length + 1, oficial = f.disponivel != null;
+    add([vazio(f.nome === NAO_INFORMADA ? 'Fonte não informada' : f.nome), oficial ? { v: f.disponivel, s: 'moeda' } : { v: '', s: 'moeda' },
+      { f: somaFase(f.nome, ['andamento', 'concluida']), s: 'moeda' }, { f: somaFase(f.nome, ['licitacao']), s: 'moeda' }, { f: somaFase(f.nome, ['planejamento']), s: 'moeda' },
+      oficial ? { f: `IF($B$5="Todos os eixos",B${r}-SUM(C${r}:E${r}),"")`, s: 'moeda' } : { v: '', s: 'moeda' },
+      oficial ? { f: `IF(AND($B$5="Todos os eixos",B${r}>0),C${r}/B${r},"")`, s: 'pct' } : { v: '', s: 'pct' }]);
+  });
+  const fimOficial = iniFonte + FONTES_OFICIAIS.length - 1, fimFonte = R.length, totFonte = fimFonte + 1;
+  add([{ v: 'Total', s: 'totalTexto' }, ...['B', 'C', 'D', 'E'].map(c => ({ f: `SUM(${c}${iniFonte}:${c}${fimFonte})`, s: 'totalMoeda' })),
+    { f: `IF($B$5="Todos os eixos",SUM(F${iniFonte}:F${fimOficial}),"")`, s: 'totalMoeda' },
+    { f: `IF(AND($B$5="Todos os eixos",B${totFonte}>0),SUM(C${iniFonte}:C${fimOficial})/B${totFonte},"")`, s: 'totalPct' }]);
+  const barrasResumo = [`G${iniFonte}:G${fimOficial}`];
+  add([]);
+
+  // Eixos temáticos (usa só o filtro de fonte)
+  add([{ v: 'Eixos temáticos', s: 'subtitulo' }]);
+  alturas[add(cabecalho(['Eixo', 'Objetos', 'Contratado', 'Em licitação', 'Em planejamento', 'Total'], [1, 2, 3, 4, 5]))] = 24;
+  const iniEixo = R.length + 1;
+  const somaEixo = (r, fases) => fases.map(f => `SUMIFS(${colFonte},Base_Eixo,$A${r},Base_Fase,"${nomeFase(f)}")`).join('+');
+  EIXOS.forEach(e => {
+    const r = R.length + 1;
+    add([vazio(e), { f: `COUNTIFS(Base_Tipo,"Objeto",Base_Eixo,$A${r},Base_Fontes,${fonteCrit})`, s: 'inteiro' },
+      { f: somaEixo(r, ['andamento', 'concluida']), s: 'moeda' }, { f: somaEixo(r, ['licitacao']), s: 'moeda' },
+      { f: somaEixo(r, ['planejamento']), s: 'moeda' }, { f: `SUM(C${r}:E${r})`, s: 'moeda' }]);
+  });
+  const fimEixo = R.length;
+  add([{ v: 'Total', s: 'totalTexto' }, { f: `SUM(B${iniEixo}:B${fimEixo})`, s: 'totalInteiro' }, ...['C', 'D', 'E', 'F'].map(c => ({ f: `SUM(${c}${iniEixo}:${c}${fimEixo})`, s: 'totalMoeda' }))]);
+  add([]);
+
+  // Panorama do programa (sem filtros)
+  add([{ v: 'Panorama do programa', s: 'subtitulo' }]);
+  alturas[add(cabecalho(['Indicador', 'Valor', '% do programa'], [1, 2]))] = 24;
+  const rTotal = R.length + 1;
+  add([vazio('Total anunciado pela Prefeitura'), { v: TOTAL_PROGRAMA, s: 'moeda' }, { v: 1, s: 'pct' }]);
+  add([vazio('Cadastrado em objetos no Notion'), { f: 'SUM(Base_Valor)', s: 'moeda' }, { f: `B${rTotal + 1}/B${rTotal}`, s: 'pct' }]);
+  add([vazio('Ainda não detalhado em objetos'), { f: `B${rTotal}-B${rTotal + 1}`, s: 'moeda' }, { f: `B${rTotal + 2}/B${rTotal}`, s: 'pct' }]);
+  add([]);
+
+  // Entregas previstas
+  const ent = entregasPrevistas();
+  add([{ v: `Entregas previstas até ${mesAno(ent.fim)}`, s: 'subtitulo' }]);
+  alturas[add(cabecalho(['Obra', 'Previsão de fim', 'Avanço físico', 'Contratado'], [1, 2, 3]))] = 24;
+  const iniEnt = R.length + 1;
+  ent.lista.forEach(o => add([vazio(o.nome), { v: o.termino, s: 'mes' }, o.avanco != null ? { v: o.avanco / 100, s: 'pct' } : { v: '', s: 'pct' }, { v: o.valor, s: 'moeda' }]));
+  if (ent.lista.length) barrasResumo.push(`C${iniEnt}:C${R.length}`);
+
+  /* ----- Abas por fase ----- */
+  const aba = (nome, cor, tituloTxt, colunas, larguras, lista, linha, totais, numericas, extra = {}) => {
+    const n = colunas.length, Lf = [banda(tituloTxt, n), [{ v: periodo, s: 'nota' }], [], cabecalho(colunas, numericas)];
+    const ini = Lf.length + 1;
+    ordenarPorValor(lista).forEach(o => Lf.push(linha(o)));
+    const fim = Lf.length;
+    if (lista.length) {
+      Lf.push(colunas.map((_, j) => j === 0 ? { v: `Total (${plural(contar(lista), 'objeto', 'objetos')})`, s: 'totalTexto' }
+        : totais.includes(j) ? { f: `SUM(${L(j)}${ini}:${L(j)}${fim})`, s: 'totalMoeda' } : { v: '', s: 'totalTexto' }));
+    } else {
+      Lf.push([{ v: nome === 'Concluídas' ? 'Nenhuma obra concluída cadastrada ainda.' : 'Nenhum objeto nesta fase.', s: 'nota' }]);
+    }
+    return { nome, cor, larguras, linhas: Lf, congelar: 4, mesclar: [`A1:${L(n - 1)}1`, `A2:${L(n - 1)}2`], alturas: { 1: 32, 4: 30 },
+      filtro: lista.length ? `A4:${L(n - 1)}${fim}` : '', zebra: lista.length ? [`A${ini}:${L(n - 1)}${fim}`] : [],
+      barras: extra.barra != null && lista.length ? [`${L(extra.barra)}${ini}:${L(extra.barra)}${fim}`] : [] };
+  };
+
+  return { nomes, abas: [
+    { nome: 'Resumo', cor: 'FF16213E', larguras: [40, 20, 18, 18, 18, 20, 14], linhas: R, mesclar, alturas, barras: barrasResumo,
+      listas: [{ ref: 'B5:C5', origem: `Base!$S$5:$S$${5 + EIXOS.length}` }, { ref: 'B6:C6', origem: `Base!$F$4:$${ultimaCol}$4` }] },
+    aba('Em andamento', 'FF2F6FA3', 'Obras em andamento',
+      ['Objeto', 'Processo', 'Empresa', 'Eixo', 'Valor contratado', 'Início (OS)', 'Previsão de fim', 'Avanço físico', 'Situação', 'Fonte', 'Dotação no Notion', 'Local', 'Mapa', 'Prioritário'],
+      [44, 13, 30, 24, 17, 12, 16, 12, 20, 26, 26, 34, 12, 11], porFase('andamento'),
+      o => o.sintetico
+        ? [vazio(o.nome), vazio(''), vazio(''), vazio('Vários'), { v: o.valor, s: 'moeda' }, { v: '', s: 'data' }, { v: '', s: 'mes' }, { v: '', s: 'pct' },
+           vazio(plural(o.obras.length, 'obra com aditivo', 'obras com aditivo')), vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')), vazio(''), vazio(''), vazio('')]
+        : [vazio(o.nome), vazio(o.processo), vazio(o.empresa), vazio(o.eixo), { v: o.valor, s: 'moeda' },
+           { v: o.inicio, s: 'data' }, { v: o.termino, s: 'mes' }, o.avanco != null ? { v: o.avanco / 100, s: 'pct' } : { v: '', s: 'pct' },
+           vazio(o.situacao), vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')), vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [4], [4, 7], { barra: 7 }),
+    aba('Em licitação', 'FFE9A92B', 'Objetos em licitação',
+      ['Objeto', 'Processo', 'Eixo', 'Valor estimado', 'Situação da licitação', 'Fonte', 'Dotação no Notion', 'Local', 'Mapa', 'Prioritário'],
+      [48, 13, 22, 17, 22, 28, 26, 34, 12, 11], porFase('licitacao'),
+      o => [vazio(o.nome), vazio(o.processo), vazio(o.eixo), { v: o.valor, s: 'moeda' }, vazio(o.situacao), vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')),
+            vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [3], [3]),
+    aba('Em planejamento', 'FF9AA8BD', 'Objetos em planejamento',
+      ['Objeto', 'Eixo', 'Valor estimado', 'ETP', 'TR', 'Projetos', 'Orçamento', 'Fonte', 'Dotação no Notion', 'Local', 'Mapa', 'Prioritário'],
+      [48, 22, 17, 8, 8, 10, 11, 24, 22, 34, 12, 11], porFase('planejamento'),
+      o => [vazio(o.nome), vazio(o.eixo), { v: o.valor, s: 'moeda' }, ...['ETP', 'TR', 'Projetos', 'Orçamento'].map(k => sim((o.preparo || {})[k])),
+            vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')), vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [2], [2]),
+    aba('Concluídas', 'FF2E9E6A', 'Obras concluídas', ['Objeto', 'Eixo', 'Valor', 'Conclusão', 'Fonte', 'Local'], [48, 22, 17, 16, 28, 34], porFase('concluida'),
+      o => [vazio(o.nome), vazio(o.eixo), { v: o.valor, s: 'moeda' }, { v: o.conclusao || o.termino || '', s: 'mes' }, vazio(fonteTxt(o)), vazio(localTxt(o))], [2], [2]),
+    { nome: 'Base', cor: 'FFB8C2D0', larguras: [44, 10, 16, 24, 30, ...colunasFonte.map(() => 16), 3, 3, 30], linhas: B, congelar: 4,
+      mesclar: [`A1:${ultimaCol}1`, `A2:${ultimaCol}2`], alturas: { 1: 28, 4: 30 }, filtro: `A4:${ultimaCol}${ultima}`, zebra: [`A5:${ultimaCol}${ultima}`] },
+  ] };
+}
+
+function baixar(blob, nome) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+document.getElementById('baixar-excel').addEventListener('click', () => {
+  const { abas, nomes } = abasDoRelatorio();
+  baixar(Excel.gerar(abas, nomes), nomeArquivo() + '.xlsx');
+});
+
+/* ============ Monta a página ============ */
+montarRegua();
+montarStatus();
+montarEntregas();
+document.getElementById('eixos').innerHTML = htmlEixos();
+montarFontes();
+montarControles();
+montarTabela();
+montarRelatorio();
+ajustarRelatorio();
+if (document.fonts) document.fonts.ready.then(ajustarRelatorio);
+</script>
+</body>
+</html>
