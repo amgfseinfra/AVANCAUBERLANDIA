@@ -50,12 +50,7 @@ button, input, select { font: inherit; color: inherit; }
 .topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
 .topo h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.01em; }
 .topo p { margin: 4px 0 0; color: var(--tinta-2); }
-.topo .atualizado { font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
-.botao-mini { display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px 3px 9px; border: 1px solid var(--linha); border-radius: 999px;
-  background: var(--superficie); color: var(--tinta); font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.4; }
-.botao-mini:hover { border-color: var(--tinta-2); background: #EEF1F6; }
-.botao-mini svg { width: 13px; height: 13px; }
-.botao-mini[hidden] { display: none; }
+.topo .atualizado { font-size: 14px; }
 .botao {
   background: var(--tinta); color: #fff; border: 0; border-radius: 10px;
   padding: 12px 20px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 10px; align-items: center;
@@ -314,8 +309,7 @@ details.detalhes .rolagem { margin-top: 10px; }
     <div>
       <h1>Avança Uberlândia</h1>
       <p class="subtitulo">Acompanhamento semanal das obras e projetos do programa</p>
-      <p class="atualizado"><span id="atualizado"></span><a class="botao-mini" id="atualizar-agora" target="_blank" rel="noopener" hidden
-        title="Abre o GitHub para rodar a atualização (só para quem tem acesso ao repositório)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Atualizar agora</a></p>
+      <p class="atualizado" id="atualizado"></p>
     </div>
     <div class="acoes-relatorio">
       <span>Relatório semanal</span>
@@ -492,39 +486,6 @@ function textoAtualizado() {
 }
 document.getElementById('atualizado').textContent = textoAtualizado();
 
-/* ============ Botão "Atualizar agora" ============
-   Abre no GitHub a página da atualização, onde "Run workflow" busca os dados de novo.
-   Enquanto isso, esta página confere a cada 20 segundos se a versão nova já está no ar
-   e recarrega sozinha quando estiver. */
-function mostrarAviso(texto, ms = 6000) {
-  const aviso = document.getElementById('toast');
-  aviso.textContent = texto;
-  aviso.classList.add('visivel');
-  clearTimeout(mostrarAviso.timer);
-  mostrarAviso.timer = setTimeout(() => aviso.classList.remove('visivel'), ms);
-}
-function esperarVersaoNova() {
-  if (esperarVersaoNova.ativo) return;
-  esperarVersaoNova.ativo = true;
-  const versaoAtual = DADOS.atualizadoEm + ' ' + DADOS.atualizadoHora, inicio = Date.now();
-  const conferir = setInterval(async () => {
-    if (Date.now() - inicio > 10 * 60 * 1000) { clearInterval(conferir); esperarVersaoNova.ativo = false; return; }
-    try {
-      const html = await (await fetch(location.pathname + '?versao=' + Date.now(), { cache: 'no-store' })).text();
-      const m = html.match(/"atualizadoEm":"([^"]+)","atualizadoHora":"([^"]+)"/);
-      if (m && m[1] + ' ' + m[2] !== versaoAtual) { clearInterval(conferir); location.reload(); }
-    } catch (e) { /* sem conexão agora: tenta de novo na próxima volta */ }
-  }, 20000);
-}
-if (CONFIG.repositorio && CONFIG.botao_atualizar_agora !== false) {
-  const botao = document.getElementById('atualizar-agora');
-  botao.href = `https://github.com/${CONFIG.repositorio}/actions/workflows/atualizar.yml`;
-  botao.hidden = false;
-  botao.addEventListener('click', () => {
-    mostrarAviso('No GitHub, clique em "Run workflow" e confirme. Esta página recarrega sozinha quando o painel novo estiver no ar (1 a 3 minutos).', 10000);
-    esperarVersaoNova();
-  });
-}
 document.getElementById('valor-programa').textContent = 'R$ ' + dec(TOTAL_PROGRAMA / 1e9, 2) + ' bilhões';
 
 /* ============ Régua do programa (usada na tela e no PDF) ============ */

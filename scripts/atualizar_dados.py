@@ -542,10 +542,9 @@ def montar_site(cfg, dados, pasta_saida):
     for marcador in ("/*__CONFIG__*/null", "/*__DADOS__*/null"):
         if modelo.count(marcador) != 1:
             raise Erro(f"O index.html não tem o marcador {marcador} (ou tem mais de um). Use o index.html original do pacote.")
-    publico = {k: v for k, v in cfg.items() if k in ("aviso_no_topo", "total_do_programa", "eixos", "botao_atualizar_agora")}
+    publico = {k: v for k, v in cfg.items() if k in ("aviso_no_topo", "total_do_programa", "eixos")}
     publico["fontes"] = [{"nome": f["nome"], "disponivel": f["disponivel"], "detalhe": f.get("detalhe", ""), "nota": f.get("nota", "")}
                          for f in cfg["fontes"]]
-    publico["repositorio"] = os.environ.get("GITHUB_REPOSITORY", "")   # "usuario/repositorio", preenchido pelo GitHub Actions
     html = (modelo.replace("/*__CONFIG__*/null", para_script(publico))
                   .replace("/*__DADOS__*/null", para_script(dados)))
     pasta_saida.mkdir(parents=True, exist_ok=True)

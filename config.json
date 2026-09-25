@@ -2,7 +2,6 @@
   "_leia": "Configuração do painel. Troque só os textos entre aspas e os números. Ao salvar, o site se atualiza sozinho em 1 a 2 minutos.",
 
   "aviso_no_topo": "",
-  "botao_atualizar_agora": true,
   "tag_do_programa": "Avança Uberlândia",
   "tags_de_prioridade": ["Prioridade alta", "Prioritário"],
   "total_do_programa": 2111900000,

@@ -74,8 +74,12 @@ Assim que os arquivos entram, a aba **Actions** mostra "Atualizar painel" rodand
 ## Dia a dia
 
 - **Atualização automática**: todo dia por volta das 5h (o GitHub às vezes atrasa alguns minutos).
-- **Atualizar agora**: clique no botão **Atualizar agora**, no topo do painel. Ele abre o GitHub (é preciso estar logado com acesso ao repositório); lá, clique em **Run workflow** e confirme. O painel recarrega sozinho quando a versão nova estiver no ar, em 1 a 3 minutos.
-  Também dá para fazer direto no GitHub: aba **Actions** > **Atualizar painel** > **Run workflow** > **Run workflow**.
+- **Atualizar agora** (precisa estar logado no GitHub com acesso ao repositório):
+  1. Abra o repositório e clique na aba **Actions**.
+  2. Na lista da esquerda, clique em **Atualizar painel**.
+  3. Clique em **Run workflow** (à direita) e, na caixinha que abrir, no botão verde **Run workflow**.
+  4. Espere a bolinha amarela virar um visto verde (1 a 2 minutos).
+  5. Recarregue o site (F5). O topo mostra o horário da nova atualização.
 - **Alterou o `config.json`**: o site se atualiza sozinho ao salvar.
 - O topo do painel mostra a data e a hora da última atualização.
 
@@ -88,7 +92,6 @@ Mexa só nos textos entre aspas e nos números. Se uma vírgula ou aspa sair do 
 | Quero... | Onde mexer |
 |---|---|
 | Mostrar um aviso no topo do painel | `"aviso_no_topo"`: escreva o texto (vazio = sem aviso) |
-| Esconder o botão "Atualizar agora" | `"botao_atualizar_agora": false` |
 | Mudar o total do programa | `"total_do_programa"` (só números, sem pontos) |
 | Mudar o valor previsto de uma fonte | `"fontes"` > `"disponivel"` |
 | Fazer uma dotação do Notion contar como fonte oficial | acrescente o nome, escrito como no Notion, em `"nomes_no_notion"` da fonte |
