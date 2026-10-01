@@ -294,7 +294,7 @@ def como_sim_nao(v):
 # ---------------------------------------------------------------------------
 # Regras do painel
 # ---------------------------------------------------------------------------
-PROCESSO = re.compile(r"^(CP|PE|PD|PI|RDC|TP|CC|DL|IN|PP)\s*\d", re.I)
+PROCESSO = re.compile(r"^(CP|PE|PD|PI|RDC|TP|CC|DL|IN|PP|CONTR\.?|CONTRATO)\s*\d", re.I)
 EMPRESA = re.compile(r"(ltda|construtora|engenharia|consórcio|consorcio|service|servi[cç]os|comércio|comercio|"
                      r"evolução|evolucao|barros|sete|s\.a\.|eireli|\bme\b|\bepp\b)", re.I)
 
@@ -308,7 +308,7 @@ def parece_empresa(parte, empresa):
 
 def separar_titulo(bruto, empresa=""):
     """'Obra X - Empresa Y - CP 123/2025' vira ('Obra X', 'CP 123/2025')."""
-    partes = [p.strip().rstrip("=") for p in re.split(r"\s+-\s+", como_texto(bruto)) if p.strip()]
+    partes = [p.strip().rstrip("=-").strip() for p in re.split(r"\s+-\s+", como_texto(bruto)) if p.strip().rstrip("=-")]
     processo = next((p for p in partes if PROCESSO.match(p)), "")
     resto = [p for p in partes if not PROCESSO.match(p)]
     if len(resto) > 1 and parece_empresa(resto[-1], empresa):
@@ -365,6 +365,31 @@ class Regras:
         self.tag = normalizar(cfg["tag_do_programa"])
         self.tags_prioridade = {normalizar(t) for t in cfg.get("tags_de_prioridade", [])}
         self.situacoes_ignoradas = [normalizar(s) for s in cfg.get("ignorar_situacao_com", []) if s]
+        nomes_fontes = {f["nome"] for f in cfg["fontes"]} | {OUTROS, NAO_INFORMADA}
+        self.divisoes = []
+        for d in cfg.get("divisoes_manuais", []):
+            for fonte in d.get("valores", {}):
+                if fonte not in nomes_fontes:
+                    raise Erro(f'Em "divisoes_manuais", a fonte "{fonte}" não existe em "fontes". Use o nome exatamente como está lá.')
+            if d.get("objeto"):
+                self.divisoes.append({"trecho": normalizar(d["objeto"]), "objeto": d["objeto"], "valores": d["valores"], "usada": False})
+
+    def dividir(self, o, titulo, avisos):
+        """Se o objeto tem divisão manual no config, reparte o valor entre as fontes indicadas."""
+        alvo = normalizar(o["nome"] + " " + titulo)
+        regra = next((d for d in self.divisoes if d["trecho"] in alvo), None)
+        if not regra:
+            return
+        regra["usada"] = True
+        fixos = {f: float(v) for f, v in regra["valores"].items() if not isinstance(v, str)}
+        restante = max(o["valor"] - sum(fixos.values()), 0.0)
+        divisao = [{"fonte": f, "valor": round(fixos[f] if f in fixos else restante, 2)} for f in regra["valores"]]
+        o["divisao"] = [d for d in divisao if d["valor"] > 0]
+        o["fontes"] = [d["fonte"] for d in o["divisao"]] or o["fontes"]
+        if OUTROS not in o["fontes"]:
+            o["outros"] = []
+        partes = " + ".join(f'{d["fonte"]} {reais(d["valor"])}' for d in o["divisao"])
+        avisos.append(f'Divisão manual aplicada em "{o["nome"]}": {partes}.')
 
     def fontes(self, dotacoes):
         """Converte as dotações do Notion nas fontes oficiais do programa."""
@@ -385,7 +410,12 @@ class Regras:
                 fontes.append(f)
         return fontes, outros
 
-    def eixo(self, valor_notion, titulo, descricao, secretaria, avisos, nome_obj):
+    def eixo(self, valor_notion, titulo, descricao, secretaria, avisos, nome_obj, eixo_padrao=""):
+        if not valor_notion and eixo_padrao:
+            e = self.eixo_por_nome.get(chave(eixo_padrao))
+            if e:
+                return e, "base"
+            avisos.append(f'O "eixo_padrao" "{eixo_padrao}" não está na lista de eixos do config.json.')
         if valor_notion:
             e = self.eixo_por_nome.get(chave(valor_notion))
             if e:
@@ -490,7 +520,7 @@ def ler_base(notion, regras, base, avisos):
             dotacao = como_lista(valor("dotacao")[0])
             fontes, outros = regras.fontes(dotacao)
             eixo, origem = regras.eixo(como_texto(valor("eixo")[0]), titulo_bruto, descricao,
-                                       como_texto(valor("secretaria")[0]), avisos, nome)
+                                       como_texto(valor("secretaria")[0]), avisos, nome, base.get("eixo_padrao", ""))
             avanco = como_numero(valor("avanco")[0])
             if avanco is not None and formato_avanco == "percent":
                 avanco *= 100
@@ -519,6 +549,7 @@ def ler_base(notion, regras, base, avisos):
                 })
             if base["fase"] == "concluida":
                 o["conclusao"] = como_data(valor("conclusao")[0])
+            regras.dividir(o, titulo_bruto, avisos)
             objetos.append(o)
 
     if ignorados:
@@ -543,7 +574,8 @@ def montar_site(cfg, dados, pasta_saida):
         if modelo.count(marcador) != 1:
             raise Erro(f"O index.html não tem o marcador {marcador} (ou tem mais de um). Use o index.html original do pacote.")
     publico = {k: v for k, v in cfg.items() if k in ("aviso_no_topo", "total_do_programa", "eixos")}
-    publico["fontes"] = [{"nome": f["nome"], "disponivel": f["disponivel"], "detalhe": f.get("detalhe", ""), "nota": f.get("nota", "")}
+    publico["fontes"] = [{"nome": f["nome"], "disponivel": f["disponivel"], "detalhe": f.get("detalhe", ""), "nota": f.get("nota", ""),
+                          "financiamento": f.get("financiamento", True), "no_planejamento": f.get("no_planejamento", [])}
                          for f in cfg["fontes"]]
     html = (modelo.replace("/*__CONFIG__*/null", para_script(publico))
                   .replace("/*__DADOS__*/null", para_script(dados)))
@@ -582,6 +614,17 @@ def principal():
         lidos, resumo = ler_base(notion, regras, base, avisos)
         objetos += lidos
         resumos.append(resumo)
+    for d in regras.divisoes:
+        if not d["usada"]:
+            avisos.append(f'A divisão manual de "{d["objeto"]}" não encontrou nenhum objeto com esse nome no painel.')
+    # Conferência dos valores previstos no config.json
+    previsto = sum(float(f["disponivel"]) for f in cfg["fontes"])
+    if abs(previsto - float(cfg["total_do_programa"])) > 0.5:
+        avisos.append(f'A soma do previsto das fontes ({reais(previsto)}) é diferente do total do programa ({reais(cfg["total_do_programa"])}).')
+    for f in cfg["fontes"]:
+        partes = f.get("no_planejamento") or []
+        if partes and abs(sum(float(x["valor"]) for x in partes) - float(f["disponivel"])) > 0.5:
+            avisos.append(f'Fonte "{f["nome"]}": a soma de "no_planejamento" é diferente do "disponivel".')
 
     momento = agora_brasilia()
     dados = {"atualizadoEm": momento.strftime("%Y-%m-%d"), "atualizadoHora": momento.strftime("%H:%M"), "objetos": objetos}

@@ -204,7 +204,7 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
   .regua-escala b.meio { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .regua-barra span, .toast { transition: none; }
+  .regua-barra span, .toast, details.recolhivel .seta { transition: none; }
 }
 
 /* ============ 9. BOTÕES DO RELATÓRIO ============ */
@@ -239,6 +239,14 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
 .fonte-valor small.acima { color: #B42318; font-weight: 600; }
 .chaves i.saldo { background: repeating-linear-gradient(135deg, #EEF1F5 0 3px, #C9D1DC 3px 6px); box-shadow: inset 0 0 0 1px #C9D1DC; }
 .chaves i.marco { width: 2px; height: 14px; border-radius: 1px; background: var(--tinta); }
+/* Planejamento: quadro que abre e fecha pela setinha */
+details.recolhivel > summary { list-style: none; cursor: pointer; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+details.recolhivel > summary::-webkit-details-marker { display: none; }
+details.recolhivel .seta { width: 22px; height: 22px; flex: none; color: var(--andamento); transition: transform 150ms; }
+details.recolhivel[open] .seta { transform: rotate(90deg); }
+details.recolhivel > summary:hover h3 { color: var(--andamento); }
+details.recolhivel .resumo-recolhivel { font-size: 14px; color: var(--tinta-2); }
+details.recolhivel > .descricao { margin-top: 10px; }
 /* Planejamento: uma barra por fonte, com o valor previsto */
 .fonte-linha.plan { grid-template-columns: 230px 1fr 150px; padding: 6px 0; }
 .fonte-plan { position: absolute; left: 0; top: 2px; bottom: 2px; border-radius: 0 4px 4px 0;
@@ -246,6 +254,7 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
 .fonte-linha.total { border-top: 2px solid var(--tinta); border-bottom: 0; margin-top: 2px; padding-top: 10px; }
 .fonte-linha.total .fonte-barra { height: 0; }
 .obj-sub .miudo, .miudo { font-size: 11px; color: var(--tinta-2); }
+.nota-garantido { font-size: 13px; line-height: 1.3; color: var(--tinta-2); margin-top: 4px; padding-left: 8px; border-left: 2px solid #C9D1DC; }
 @media (max-width: 700px) {
   .fonte-linha, .fonte-linha.plan { grid-template-columns: 1fr auto; }
   .fonte-barra { grid-column: 1 / -1; grid-row: 2; }
@@ -385,11 +394,15 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
       <div id="fontes"></div>
       <p class="nota">Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, salvo quando a divisão é informada.</p>
     </div>
-    <div class="fontes-bloco">
-      <h3>Planejamento Avança Uberlândia</h3>
+    <details class="fontes-bloco recolhivel">
+      <summary>
+        <svg class="seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        <h3>Planejamento Avança Uberlândia</h3>
+        <span class="resumo-recolhivel" id="planejamento-resumo"></span>
+      </summary>
       <p class="descricao">Recurso previsto para cada fonte na projeção oficial do programa</p>
       <div id="planejamento-fontes"></div>
-    </div>
+    </details>
   </section>
 
   <section class="painel" id="secao-objetos" aria-labelledby="t-objetos">
@@ -413,6 +426,7 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
       <li>O total do programa é o valor anunciado pela Prefeitura.</li>
       <li>O recurso previsto de cada fonte segue a projeção oficial do programa.</li>
       <li>Dotações que não estão entre as fontes da projeção oficial aparecem como "Outros".</li>
+      <li id="nota-teto" hidden></li>
     </ul>
   </footer>
 </div>
@@ -439,8 +453,11 @@ if (!CONFIG || !DADOS) {
 }
 
 /* ============ Fontes, total e eixos (do config.json) ============ */
-const FONTES_OFICIAIS = CONFIG.fontes.map(f => ({ nome: f.nome, disponivel: f.disponivel, obs: f.detalhe, nota: f.nota }));
+const FONTES_OFICIAIS = CONFIG.fontes.map(f => ({ nome: f.nome, disponivel: f.disponivel, obs: f.detalhe, nota: f.nota,
+  teto: f.financiamento === false, planejamento: f.no_planejamento || [] }));
 const OUTROS = 'Outros', NAO_INFORMADA = 'Não informada';
+const A_DEFINIR = 'Financiamento ou outra fonte';   // o que passa do teto de uma fonte que não é financiamento
+const TETOS = new Map(FONTES_OFICIAIS.filter(f => f.teto).map(f => [f.nome, f.disponivel]));
 const TOTAL_PROGRAMA = CONFIG.total_do_programa;
 const EIXOS = CONFIG.eixos.includes(OUTROS) ? CONFIG.eixos : [...CONFIG.eixos, OUTROS];
 
@@ -460,20 +477,66 @@ function repartir(o, valor) {
   return o.fontes.map(f => ({ fonte: f, valor: valor / o.fontes.length }));
 }
 
-// "Partes" de cada objeto: quanto de cada fonte vai para cada eixo
+// "Partes" de cada objeto: quanto de cada fonte vai para cada eixo (valor original e aditivo separados)
 DADOS.objetos.forEach(o => {
   if (!EIXOS.includes(o.eixo)) o.eixo = OUTROS;
   o.fontes = o.fontes && o.fontes.length ? o.fontes : [NAO_INFORMADA];
   o.outros = o.outros || [];
   o.dotacao = o.dotacao || [];
   o.partes = repartir(o, o.valor).map(p => ({ eixo: o.eixo, ...p }));
+  o.partesAditivo = o.aditivo > 0 ? repartir(o, o.aditivo).map(p => ({ eixo: o.eixo, ...p })) : [];
 });
+
+/* Teto das fontes que não são financiamento (Cohab, Governo do Estado etc.): o valor nelas não passa do previsto.
+   Ordem de prioridade: concluídas, em andamento, em licitação, em planejamento; dentro da mesma fase, o valor
+   original antes do aditivo, e o teto é repartido em proporção ao valor de cada objeto.
+   O que passa do teto vai para a outra fonte do objeto (se ele tiver) ou para "Financiamento ou outra fonte". */
+function aplicarTetos(lista) {
+  TETOS.forEach((teto, fonte) => {
+    let saldo = teto;
+    ['concluida', 'andamento', 'licitacao', 'planejamento'].forEach(fase => ['partes', 'partesAditivo'].forEach(campo => {
+      const itens = lista.filter(o => o.status === fase).flatMap(o => o[campo].filter(p => p.fonte === fonte && p.valor > 0).map(p => ({ o, p })));
+      const total = itens.reduce((s, x) => s + x.p.valor, 0);
+      if (!total) return;
+      const fator = Math.min(1, saldo / total);
+      saldo = Math.max(0, saldo - total * fator);
+      if (fator >= 1) return;
+      itens.forEach(({ o, p }) => {
+        const excedente = p.valor * (1 - fator);
+        p.valor -= excedente;
+        const outras = [...new Set(o[campo].map(q => q.fonte))].filter(f => f !== fonte && !TETOS.has(f) && f !== NAO_INFORMADA && f !== A_DEFINIR);
+        const destinos = outras.length ? outras : [A_DEFINIR];
+        destinos.forEach(d => {
+          let q = o[campo].find(x => x.fonte === d);
+          if (!q) o[campo].push(q = { eixo: o.eixo, fonte: d, valor: 0 });
+          q.valor += excedente / destinos.length;
+        });
+        if (campo === 'partes') o.limitado = true;
+      });
+    }));
+  });
+}
+aplicarTetos(DADOS.objetos);
+
+// Nota da lista de objetos: quanto está garantido na fonte com teto e de onde vem o restante
+function notaGarantido(o) {
+  if (o.sintetico || !(o.limitado || (o.divisao && o.divisao.length))) return null;
+  const garantidas = o.partes.filter(p => TETOS.has(p.fonte) && p.valor > 0.005);
+  const resto = o.partes.filter(p => !TETOS.has(p.fonte) && p.valor > 0.005);
+  if (!garantidas.length || !resto.length) return null;
+  const valorResto = resto.reduce((s, p) => s + p.valor, 0);
+  const origem = resto.map(p => p.fonte === A_DEFINIR ? 'financiamento ou outra fonte' : p.fonte).join(' e ');
+  return {
+    garantido: garantidas.map(p => `${p.fonte} garante ${reais(p.valor)}`).join('; '),
+    restante: `restante (${reais(valorResto)}): ${origem}`,
+  };
+}
 
 // Aditivos: o valor de cada obra é o contratado original; os aditivos viram um item à parte na lista
 [['andamento', 'Aditivos de obras em andamento', 'Em andamento'], ['concluida', 'Aditivos de obras concluídas', 'Concluída']].forEach(([fase, rotulo, situacao]) => {
   const obras = DADOS.objetos.filter(o => o.status === fase && !o.sintetico && o.aditivo > 0);
   if (!obras.length) return;
-  const partes = obras.flatMap(o => repartir(o, o.aditivo).map(p => ({ eixo: o.eixo, ...p })));
+  const partes = obras.flatMap(o => o.partesAditivo.map(p => ({ ...p })));
   const porFonte = {};
   partes.forEach(p => porFonte[p.fonte] = (porFonte[p.fonte] || 0) + p.valor);
   DADOS.objetos.push({
@@ -481,7 +544,7 @@ DADOS.objetos.forEach(o => {
     valor: obras.reduce((s, o) => s + o.aditivo, 0), obras: obras.map(o => o.nome), partes,
     fontes: Object.keys(porFonte).sort((a, b) => porFonte[b] - porFonte[a]),
     outros: [...new Set(obras.filter(o => o.fontes.includes(OUTROS)).flatMap(o => o.outros))],
-    dotacao: [...new Set(obras.flatMap(o => o.dotacao))], situacao, avanco: null,
+    dotacao: [...new Set(obras.flatMap(o => o.dotacao))], situacao, avanco: null, partesAditivo: [],
     inicio: '', termino: '', conclusao: '', local: { texto: '', link: '' }, prioridade: false,
   });
 });
@@ -704,12 +767,12 @@ function ligarDicasEixos(alvo) {
 
 /* ============ Fontes de recurso (tela e PDF) ============ */
 // Ordem das linhas: fontes da projeção oficial (da maior para a menor), depois o que não está nela
-const ORDEM_FONTES = [...new Set([...FONTES_OFICIAIS.slice().sort((a, b) => b.disponivel - a.disponivel).map(f => f.nome), OUTROS, NAO_INFORMADA])];
+const ORDEM_FONTES = [...new Set([...FONTES_OFICIAIS.slice().sort((a, b) => b.disponivel - a.disponivel).map(f => f.nome), OUTROS, A_DEFINIR, NAO_INFORMADA])];
 const TOTAL_PREVISTO = FONTES_OFICIAIS.reduce((s, f) => s + f.disponivel, 0);
 function resumoFontes() {
   const linhas = {};
   const linha = nome => linhas[nome] ??= { nome, disponivel: null, concluida: 0, andamento: 0, licitacao: 0, planejamento: 0, outros: new Set() };
-  FONTES_OFICIAIS.forEach(f => Object.assign(linha(f.nome), { disponivel: f.disponivel, obs: f.obs, nota: f.nota, oficial: true }));
+  FONTES_OFICIAIS.forEach(f => Object.assign(linha(f.nome), { disponivel: f.disponivel, obs: f.obs, nota: f.nota, oficial: true, teto: f.teto }));
   ORDEM_FONTES.forEach(linha);
   objetos.forEach(o => o.partes.forEach(p => {
     linha(p.fonte)[o.status] += p.valor;
@@ -739,13 +802,17 @@ function htmlFontes() {
                              : (l.obs ? `<span class="obs"> · ${esc(l.obs)}</span>` : ''))
         + (l.nota ? `<span class="miudo nota-fonte">${esc(l.nota)}</span>` : '');
     } else {
-      sub = l.nome === OUTROS ? `<span class="miudo">${esc(inclui)}</span>` : 'dotação não apontada';
+      sub = l.nome === OUTROS ? `<span class="miudo">${esc(inclui)}</span>`
+        : l.nome === A_DEFINIR ? 'parte dos objetos acima do teto de fontes que não são financiamento'
+        : 'dotação não apontada';
     }
     const segs = FASES.map(f => l[f.id] ? `<span style="width:${l[f.id] / escala * 100}%;background:${f.cor}" title="${f.rotuloValor}: ${reaisCompleto(l[f.id])}"></span>` : '').join('');
-    const acima = l.disponivel && l.comprometido > l.disponivel;
+    const acima = l.disponivel && l.comprometido > l.disponivel + 0.5;
+    const noTeto = l.teto && l.comprometido >= l.disponivel - 0.5;
     const detalhe = !l.disponivel ? (l.comprometido ? 'comprometido' : '')
       : !l.comprometido ? 'nenhum objeto ainda'
       : acima ? `<small class="acima">▲ ${pct(l.comprometido, l.disponivel)} do previsto</small>`
+      : noTeto ? 'teto atingido (100%)'
       : `${pct(l.comprometido, l.disponivel)} do previsto`;
     const separa = !l.oficial && !separou ? (separou = true, ' separa') : '';
     return `<div class="fonte-linha${separa}">
@@ -756,9 +823,13 @@ function htmlFontes() {
 }
 
 // Planejamento Avança Uberlândia: o previsto de cada fonte na projeção oficial
+// Linhas do planejamento: fontes com "no_planejamento" no config.json aparecem separadas (ex.: Novo Finisa 1 e 2)
+const linhasPlanejamento = () => FONTES_OFICIAIS.flatMap(f => f.planejamento.length
+    ? f.planejamento.map(x => ({ nome: x.nome, disponivel: x.valor, obs: x.detalhe }))
+    : [f]).sort((a, b) => b.disponivel - a.disponivel);
 function htmlPlanejamento() {
   const escala = escalaFontes(resumoFontes());
-  const linhas = FONTES_OFICIAIS.slice().sort((a, b) => b.disponivel - a.disponivel);
+  const linhas = linhasPlanejamento();
   return linhas.map(f => `<div class="fonte-linha plan">
       <div class="fonte-nome">${esc(f.nome)}${f.obs ? `<small>${esc(f.obs)}</small>` : ''}</div>
       <div class="fonte-barra"><div class="fonte-plan" style="width:${f.disponivel / escala * 100}%" title="Previsto: ${reaisCompleto(f.disponivel)}"></div></div>
@@ -767,18 +838,28 @@ function htmlPlanejamento() {
       <div class="fonte-valor">R$ ${dec(TOTAL_PREVISTO / 1e9, 2)} bi<small>${reaisCompleto(TOTAL_PREVISTO)}</small></div></div>`;
 }
 function montarFontes() {
+  if (TETOS.size) {
+    const nota = document.getElementById('nota-teto');
+    const nomes = [...TETOS.keys()];
+    nota.textContent = `${nomes.slice(0, -1).join(', ')}${nomes.length > 1 ? ' e ' : ''}${nomes[nomes.length - 1]} não são financiamento: `
+      + `o valor nessas fontes não passa do previsto. O que passar vai para a outra fonte do objeto ou aparece como "${A_DEFINIR}".`;
+    nota.hidden = false;
+  }
   document.getElementById('fontes').innerHTML = htmlFontes();
   document.getElementById('planejamento-fontes').innerHTML = htmlPlanejamento();
+  document.getElementById('planejamento-resumo').textContent = `R$ ${dec(TOTAL_PREVISTO / 1e9, 2)} bi previstos`;
 }
 
 /* ============ Tabela de objetos (abas, filtro e busca) ============ */
 const colLocal = o => o.local.texto
   ? (o.local.link ? `<a href="${esc(o.local.link)}" target="_blank" rel="noopener">${esc(o.local.texto)}</a>` : esc(o.local.texto))
   : '—';
-const colObjeto = (o, sub) => `<div class="obj-nome">${esc(o.nome)}${o.prioridade ? '<span class="selo">Prioritário</span>' : ''}</div>${sub ? `<div class="obj-sub">${sub}</div>` : ''}`;
+const colObjeto = (o, sub) => `<div class="obj-nome">${esc(o.nome)}${o.prioridade ? '<span class="selo">Prioritário</span>' : ''}</div>${sub ? `<div class="obj-sub">${sub}</div>` : ''}`
+  + ((n => n ? `<div class="nota-garantido">${esc(n.garantido)}; ${esc(n.restante)}</div>` : '')(notaGarantido(o)));
 const colFonte = o => o.fontes.map(f => f === NAO_INFORMADA ? '<span class="indefinido">Não informada</span>'
   : f === OUTROS ? `Outros <span class="miudo">(${esc(o.outros.join(', '))})</span>` : esc(f)).join(', ');
 const textoFonte = o => o.fontes.map(f => f === OUTROS ? `Outros (${o.outros.join(', ')})` : f).join(', ');
+const textoFonteCompleto = o => { const n = notaGarantido(o); return textoFonte(o) + (n ? ` (${n.garantido}; ${n.restante})` : ''); };
 const colAvanco = o => o.sintetico ? '—' : o.avanco != null && !(o.avanco === 0 && o.situacao !== 'Em andamento')
   ? `<div class="avanco"><div class="avanco-trilho"><span style="width:${Math.min(o.avanco, 100)}%"></span></div>${dec(o.avanco, o.avanco % 1 ? 1 : 0)}%</div>`
     + (o.situacao !== 'Em andamento' ? `<div class="situacao">${esc(o.situacao)}</div>` : '')
@@ -881,7 +962,7 @@ function montarRelatorio() {
     <tbody>${lista.length ? lista.map(linha).join('') : `<tr><td colspan="${cabecalho.length}" class="vazio">${vazio}</td></tr>`}</tbody></table>`;
   const nome = o => o.sintetico
     ? `<i>${esc(o.nome)}</i> <span class="rel-fonte">(${plural(o.obras.length, 'obra', 'obras')}; fonte: ${esc(textoFonte(o))})</span>`
-    : `${esc(o.nome)}${o.prioridade ? ' <span class="prio" title="Prioritário">*</span>' : ''}`;
+    : `${esc(o.nome)}${o.prioridade ? ' <span class="prio" title="Prioritário">*</span>' : ''}${(n => n ? ` <span class="rel-fonte">(${esc(n.garantido)}; ${esc(n.restante)})</span>` : '')(notaGarantido(o))}`;
   const cartao = (texto, lista, cor, conteudo) => `<div class="rel-cartao" style="border-top-color:${cor}">
     <h2>${texto}<small>${plural(contar(lista), 'objeto', 'objetos')}, ${reaisOuZero(soma(lista))}</small></h2>${conteudo}</div>`;
   const avanco = o => o.avanco != null ? dec(o.avanco, o.avanco % 1 ? 1 : 0) + '%' : '—';
@@ -1093,7 +1174,7 @@ function abasDoRelatorio() {
   const s = semanaDoRelatorio();
   const periodo = `Semana de ${data(s.inicio)} a ${data(s.fim)}. ${textoAtualizado()}.`;
   const nomeFase = id => FASES.find(f => f.id === id).nome;
-  const fonteTxt = textoFonte;
+  const fonteTxt = textoFonteCompleto;
   const mapa = o => o.local.link ? { f: `HYPERLINK("${o.local.link}","Abrir mapa")`, s: 'link' } : { v: '', s: 'texto' };
   const localTxt = o => o.local.texto === 'Ver no mapa' ? '' : o.local.texto;
   const sim = b => ({ v: b ? 'Sim' : 'Não', s: 'centro' });
@@ -1108,9 +1189,10 @@ function abasDoRelatorio() {
   const colDaFonte = nome => L(5 + colunasFonte.indexOf(nome));
   const ultimaCol = L(4 + colunasFonte.length);
   const colEixos = 5 + colunasFonte.length + 1, letraEixos = L(colEixos);
-  const linhaBase = (nome, tipo, fase, o, valor) => {
-    const partes = repartir(o, valor);
-    return [vazio(nome), vazio(tipo), vazio(fase), vazio(o.eixo), vazio(';' + o.fontes.join(';') + ';'), { v: valor, s: 'moeda' },
+  // Valor de cada fonte já com a divisão informada e o teto das fontes que não são financiamento
+  const linhaBase = (nome, tipo, fase, o, valor, partes) => {
+    const fontes = [...new Set([...o.fontes, ...partes.filter(p => p.valor > 0.005).map(p => p.fonte)])];
+    return [vazio(nome), vazio(tipo), vazio(fase), vazio(o.eixo), vazio(';' + fontes.join(';') + ';'), { v: valor, s: 'moeda' },
       ...colunasFonte.slice(1).map(f => ({ v: partes.filter(p => p.fonte === f).reduce((s, p) => s + p.valor, 0), s: 'moeda' }))];
   };
   const cabBase = cabecalho(['Objeto', 'Tipo', 'Fase', 'Eixo', 'Fontes', ...colunasFonte], colunasFonte.map((_, k) => 5 + k));
@@ -1118,9 +1200,9 @@ function abasDoRelatorio() {
   cabBase[colEixos] = { v: 'Lista de eixos', s: 'cabecalho' };
   const B = [banda('Base de dados do Resumo', 5 + colunasFonte.length), [{ v: periodo, s: 'nota' }], [], cabBase];
   ['concluida', 'andamento', 'licitacao', 'planejamento'].flatMap(id => ordenarPorValor(porFase(id))).filter(o => !o.sintetico)
-    .forEach(o => B.push(linhaBase(o.nome, 'Objeto', nomeFase(o.status), o, o.valor)));
+    .forEach(o => B.push(linhaBase(o.nome, 'Objeto', nomeFase(o.status), o, o.valor, o.partes)));
   obras.filter(o => (o.status === 'andamento' || o.status === 'concluida') && o.aditivo > 0)
-    .forEach(o => B.push(linhaBase('Aditivo: ' + o.nome, 'Aditivo', nomeFase(o.status), o, o.aditivo)));
+    .forEach(o => B.push(linhaBase('Aditivo: ' + o.nome, 'Aditivo', nomeFase(o.status), o, o.aditivo, o.partesAditivo)));
   const ultima = Math.max(B.length, 5);
   while (B.length < 5 + EIXOS.length) B.push([]);
   ['Todos os eixos', ...EIXOS].forEach((e, k) => { const r = 4 + k; while (B[r].length < colEixos) B[r].push(null); B[r][colEixos] = vazio(e); });
@@ -1177,6 +1259,15 @@ function abasDoRelatorio() {
     { f: `IF($B$5="Todos os eixos",SUM(F${iniFonte}:F${fimOficial}),"")`, s: 'totalMoeda' },
     { f: `IF(AND($B$5="Todos os eixos",B${totFonte}>0),SUM(C${iniFonte}:E${fimOficial})/B${totFonte},"")`, s: 'totalPct' }]);
   const barrasResumo = [`G${iniFonte}:G${fimOficial}`];
+  add([]);
+
+  // Planejamento Avança Uberlândia (projeção oficial, sem filtros)
+  add([{ v: 'Planejamento Avança Uberlândia', s: 'subtitulo' }]);
+  alturas[add(cabecalho(['Fonte', 'Previsto', '% do total'], [1, 2]))] = 24;
+  const plan = linhasPlanejamento(), iniPlan = R.length + 1, totPlan = iniPlan + plan.length;
+  plan.forEach((f, k) => add([vazio(f.obs ? `${f.nome} (${f.obs})` : f.nome), { v: f.disponivel, s: 'moeda' },
+    { f: `IF($B$${totPlan}=0,0,B${iniPlan + k}/$B$${totPlan})`, s: 'pct' }]));
+  add([{ v: 'Total previsto', s: 'totalTexto' }, { f: `SUM(B${iniPlan}:B${totPlan - 1})`, s: 'totalMoeda' }, { f: `IF(B${totPlan}=0,0,1)`, s: 'totalPct' }]);
   add([]);
 
   // Eixos temáticos (usa só o filtro de fonte)

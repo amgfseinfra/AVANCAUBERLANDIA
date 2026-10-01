@@ -110,28 +110,30 @@
     }
   ],
 
-  "_leia_fontes": "Projeção oficial do programa. Dotações do Notion que não aparecem em nenhum nomes_no_notion entram em Outros.",
+  "_leia_fontes": "Projeção oficial do programa. Dotações do Notion que não aparecem em nenhum nomes_no_notion entram em Outros. financiamento: false = a fonte tem teto (o valor dos objetos nela não passa do previsto; o que passar vai para a outra fonte do objeto ou aparece como 'Financiamento ou outra fonte'). no_planejamento = como a fonte aparece, separada, no quadro Planejamento Avança Uberlândia.",
   "fontes": [
-    { "nome": "PAC", "disponivel": 508000000, "nomes_no_notion": ["PAC", "Novo PAC"] },
-    { "nome": "Ministério das Cidades (MCID)", "disponivel": 386000000,
+    { "nome": "PAC", "disponivel": 508000000, "financiamento": false, "nomes_no_notion": ["PAC", "Novo PAC"] },
+    { "nome": "Ministério das Cidades (MCID)", "disponivel": 386000000, "financiamento": false,
       "nomes_no_notion": ["Ministério das Cidades", "Ministério das Cidades (MCID)", "MCID"] },
-    { "nome": "Outros", "disponivel": 340000000,
+    { "nome": "Outros", "disponivel": 340000000, "financiamento": true,
       "detalhe": "VALE, BDMG, BB, FINISA II a IV, Pró-Transporte e demais fontes",
       "nomes_no_notion": [] },
-    { "nome": "Novo Finisa 1", "disponivel": 200000000, "detalhe": "FINISA V",
+    { "nome": "Novo Finisa 1 e 2", "disponivel": 400000000, "financiamento": true, "detalhe": "FINISA V",
       "nota": "Alguns objetos hoje apostilados com o novo FINISA possuem pequenos valores vinculados/empenhados a repasses pretéritos dos FINISAs II, III e IV. Além disso, alguns objetos serão apostilados com outras fontes à medida que elas chegarem.",
-      "nomes_no_notion": ["FINISA V", "FINISA", "Novo Finisa", "Novo Finisa 1"] },
-    { "nome": "Novo Finisa 2", "disponivel": 200000000, "detalhe": "2ª parcela do FINISA V",
-      "nomes_no_notion": ["Novo Finisa 2", "FINISA V - 2ª parcela", "FINISA V 2ª parcela"] },
-    { "nome": "BNDES", "disponivel": 180000000, "nomes_no_notion": ["BNDES"] },
-    { "nome": "DNIT-DER", "disponivel": 130000000, "nomes_no_notion": ["DNIT-DER", "DNIT", "DER", "DNIT/DER"] },
-    { "nome": "BNDES-PMAT", "disponivel": 100000000, "nomes_no_notion": ["BNDES-PMAT", "BNDES PMAT"] },
-    { "nome": "Cohab", "disponivel": 47000000, "nomes_no_notion": ["Cohab", "COHAB (MG)", "COHAB-MG", "COHAB MG"] },
-    { "nome": "Governo do Estado", "disponivel": 20900000, "nomes_no_notion": ["Governo do Estado"] }
+      "no_planejamento": [
+        { "nome": "Novo Finisa 1", "valor": 200000000, "detalhe": "FINISA V" },
+        { "nome": "Novo Finisa 2", "valor": 200000000, "detalhe": "2ª parcela do FINISA V" }
+      ],
+      "nomes_no_notion": ["FINISA V", "FINISA", "Novo Finisa", "Novo Finisa 1", "Novo Finisa 2", "FINISA V - 2ª parcela", "FINISA V 2ª parcela"] },
+    { "nome": "BNDES", "disponivel": 180000000, "financiamento": true, "nomes_no_notion": ["BNDES"] },
+    { "nome": "DNIT-DER", "disponivel": 130000000, "financiamento": false, "nomes_no_notion": ["DNIT-DER", "DNIT", "DER", "DNIT/DER"] },
+    { "nome": "BNDES-PMAT", "disponivel": 100000000, "financiamento": true, "nomes_no_notion": ["BNDES-PMAT", "BNDES PMAT"] },
+    { "nome": "Cohab", "disponivel": 47000000, "financiamento": false, "nomes_no_notion": ["Cohab", "COHAB (MG)", "COHAB-MG", "COHAB MG"] },
+    { "nome": "Governo do Estado", "disponivel": 20900000, "financiamento": false, "nomes_no_notion": ["Governo do Estado"] }
   ],
   "_leia_divisoes": "Divisão do valor de um objeto entre fontes, enquanto o Notion não tiver essa informação. objeto = um trecho do nome; restante = o que sobra do valor.",
   "divisoes_manuais": [
-    { "objeto": "Élisson Prieto", "valores": { "Cohab": 47000000, "Novo Finisa 1": "restante" } }
+    { "objeto": "Élisson Prieto", "valores": { "Cohab": 47000000, "Novo Finisa 1 e 2": "restante" } }
   ],
   "dotacoes_sem_fonte": ["Não definido", "A definir"],
   "agrupar_em_outros": [
