@@ -3,7 +3,7 @@
 
   "aviso_no_topo": "",
   "tag_do_programa": "Avança Uberlândia",
-  "tags_de_prioridade": ["Prioridade alta", "Prioritário"],
+  "tags_de_prioridade": ["Prioridade alta", "Prioritário", "Prioritários"],
   "total_do_programa": 2111900000,
   "ignorar_situacao_com": ["rescisão"],
 
@@ -28,6 +28,27 @@
         "tags": "Tag",
         "eixo": "Eixo temático",
         "endereco": "Local 1",
+        "localizacao": "Localização"
+      }
+    },
+    {
+      "nome": "Consórcio FP Projetos",
+      "fase": "andamento",
+      "link_ou_id": "506814ce57dd824e946101019a661e81",
+      "exigir_tag": true,
+      "eixo_padrao": "Infraestrutura global",
+      "colunas": {
+        "titulo": "Nome",
+        "descricao": "Objeto",
+        "valor": "Valor",
+        "empresa": "Empresa",
+        "inicio": "Ordem de serviço",
+        "termino": "Previsão de término",
+        "situacao": "Status do objeto",
+        "secretaria": "Secretaria",
+        "dotacao": "Dotação orçamentária",
+        "tags": "Tag",
+        "eixo": "Eixo temático",
         "localizacao": "Localização"
       }
     },
@@ -89,18 +110,28 @@
     }
   ],
 
+  "_leia_fontes": "Projeção oficial do programa. Dotações do Notion que não aparecem em nenhum nomes_no_notion entram em Outros.",
   "fontes": [
     { "nome": "PAC", "disponivel": 508000000, "nomes_no_notion": ["PAC", "Novo PAC"] },
-    { "nome": "Novo Finisa 1 e 2", "disponivel": 400000000, "detalhe": "R$ 200 mi cada",
-      "nota": "Inclui um pequeno remanescente do FINISA antigo, por isso o total pode passar um pouco de R$ 400 mi. Além disso, alguns objetos serão apostilados com outras fontes à medida que elas chegarem.",
-      "nomes_no_notion": ["FINISA", "Finisa 1", "Finisa 2", "Novo Finisa", "Novo Finisa 1", "Novo Finisa 2"] },
     { "nome": "Ministério das Cidades (MCID)", "disponivel": 386000000,
       "nomes_no_notion": ["Ministério das Cidades", "Ministério das Cidades (MCID)", "MCID"] },
+    { "nome": "Outros", "disponivel": 340000000,
+      "detalhe": "VALE, BDMG, BB, FINISA II a IV, Pró-Transporte e demais fontes",
+      "nomes_no_notion": [] },
+    { "nome": "Novo Finisa 1", "disponivel": 200000000, "detalhe": "FINISA V",
+      "nota": "Alguns objetos hoje apostilados com o novo FINISA possuem pequenos valores vinculados/empenhados a repasses pretéritos dos FINISAs II, III e IV. Além disso, alguns objetos serão apostilados com outras fontes à medida que elas chegarem.",
+      "nomes_no_notion": ["FINISA V", "FINISA", "Novo Finisa", "Novo Finisa 1"] },
+    { "nome": "Novo Finisa 2", "disponivel": 200000000, "detalhe": "2ª parcela do FINISA V",
+      "nomes_no_notion": ["Novo Finisa 2", "FINISA V - 2ª parcela", "FINISA V 2ª parcela"] },
     { "nome": "BNDES", "disponivel": 180000000, "nomes_no_notion": ["BNDES"] },
     { "nome": "DNIT-DER", "disponivel": 130000000, "nomes_no_notion": ["DNIT-DER", "DNIT", "DER", "DNIT/DER"] },
     { "nome": "BNDES-PMAT", "disponivel": 100000000, "nomes_no_notion": ["BNDES-PMAT", "BNDES PMAT"] },
     { "nome": "Cohab", "disponivel": 47000000, "nomes_no_notion": ["Cohab", "COHAB (MG)", "COHAB-MG", "COHAB MG"] },
     { "nome": "Governo do Estado", "disponivel": 20900000, "nomes_no_notion": ["Governo do Estado"] }
+  ],
+  "_leia_divisoes": "Divisão do valor de um objeto entre fontes, enquanto o Notion não tiver essa informação. objeto = um trecho do nome; restante = o que sobra do valor.",
+  "divisoes_manuais": [
+    { "objeto": "Élisson Prieto", "valores": { "Cohab": 47000000, "Novo Finisa 1": "restante" } }
   ],
   "dotacoes_sem_fonte": ["Não definido", "A definir"],
   "agrupar_em_outros": [

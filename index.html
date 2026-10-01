@@ -122,6 +122,21 @@ button, input, select { font: inherit; color: inherit; }
 .eixo-nome small { display: block; font-weight: 400; font-size: 13px; color: var(--tinta-2); }
 .eixo-trilho { height: 22px; background: var(--vazio); border-radius: 4px; overflow: hidden; display: flex; }
 .eixo-trilho span { height: 100%; }
+.eixo-trilho span + span, .fonte-segs span + span { box-shadow: inset 2px 0 0 var(--superficie); }
+.eixos-grafico .eixo[data-eixo] { border-radius: 8px; margin: 0 -8px; padding-left: 8px; padding-right: 8px; transition: opacity 120ms, background 120ms; }
+.eixos-grafico .eixo.ativo { background: #F3F6FA; }
+.eixos-grafico.focando .eixo:not(.ativo) { opacity: 0.45; }
+.eixos-grafico .eixo:focus-visible { outline-offset: 0; }
+
+/* Dica com a lista de obras de um eixo (aparece ao passar o mouse) */
+.dica { position: fixed; z-index: 50; left: 0; top: 0; width: max-content; max-width: min(400px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: hidden;
+  background: var(--superficie); border: 1px solid var(--linha); border-radius: 10px; box-shadow: 0 10px 28px rgba(22, 33, 62, 0.18);
+  padding: 10px 14px 12px; font-size: 13px; line-height: 1.35; pointer-events: none; }
+.dica strong { display: block; font-family: var(--fonte-titulo); font-size: 17px; font-weight: 600; }
+.dica-fase { display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--tinta-2); }
+.dica-fase i { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.dica ul { margin: 2px 0 0; padding-left: 17px; }
+.dica li { margin: 1px 0; }
 .eixo-valor { font-family: var(--fonte-titulo); font-weight: 600; font-size: 18px; text-align: right; white-space: nowrap; }
 
 /* Fontes */
@@ -143,9 +158,6 @@ th { text-align: left; font-weight: 600; font-size: 13px; color: var(--tinta-2);
 td { padding: 12px; border-bottom: 1px solid var(--linha); vertical-align: top; }
 td.num, th.num { text-align: right; white-space: nowrap; }
 tr:hover td { background: #F8FAFC; }
-.tabela-fontes td { padding: 9px 12px; }
-.tabela-fontes .cor { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; }
-.tabela-fontes tfoot td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--linha); }
 .indefinido { color: var(--tinta-2); font-style: italic; }
 
 .controles { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 16px; }
@@ -204,7 +216,10 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
 .so-impressao { display: none; }
 @media (max-width: 560px) { .acoes-relatorio { align-items: flex-start; } }
 
-/* ============ 10. FONTES DE RECURSO (barras de previsto x comprometido) ============ */
+/* ============ 10. FONTES DE RECURSO (situação real e planejamento) ============ */
+.fontes-bloco + .fontes-bloco { margin-top: 26px; padding-top: 22px; border-top: 2px solid var(--linha); }
+.fontes-bloco h3 { font-size: 20px; font-weight: 600; }
+.fontes-bloco > .descricao { margin: 2px 0 16px; color: var(--tinta-2); font-size: 14px; }
 .fonte-linha { display: grid; grid-template-columns: 230px 1fr 150px; gap: 16px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--linha); }
 .fonte-linha:last-child { border-bottom: 0; }
 .fonte-linha.separa { border-top: 2px solid var(--linha); margin-top: 6px; }
@@ -213,22 +228,29 @@ tr.sintetico .obj-nome { font-style: italic; font-weight: 500; }
 .fonte-nome .miudo { font-size: 11px; line-height: 1.3; margin-top: 2px; }
 .fonte-nome .nota-fonte { display: block; font-style: italic; }
 .fonte-barra { position: relative; height: 22px; }
-.fonte-disp { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
+.fonte-disp { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0;
   background: repeating-linear-gradient(135deg, #EEF1F5 0 6px, #E0E5EC 6px 12px); }
 .fonte-segs { position: absolute; left: 0; top: 0; bottom: 0; right: 0; display: flex; }
 .fonte-segs span { height: 100%; }
-.fonte-segs span:first-child { border-radius: 4px 0 0 4px; }
+.fonte-segs span:last-child { border-radius: 0 4px 4px 0; }
+.fonte-marco { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--tinta); border-radius: 1px; }
 .fonte-valor { text-align: right; font-family: var(--fonte-titulo); font-weight: 600; font-size: 18px; line-height: 1.15; white-space: nowrap; }
 .fonte-valor small { display: block; font-family: var(--fonte-texto); font-weight: 400; font-size: 13px; color: var(--tinta-2); }
-.chaves i.saldo { background: repeating-linear-gradient(135deg, #EEF1F5 0 3px, #D5DBE4 3px 6px); }
-details.detalhes { margin-top: 16px; }
-details.detalhes summary { cursor: pointer; font-weight: 600; color: var(--andamento); }
-details.detalhes .rolagem { margin-top: 10px; }
+.fonte-valor small.acima { color: #B42318; font-weight: 600; }
+.chaves i.saldo { background: repeating-linear-gradient(135deg, #EEF1F5 0 3px, #C9D1DC 3px 6px); box-shadow: inset 0 0 0 1px #C9D1DC; }
+.chaves i.marco { width: 2px; height: 14px; border-radius: 1px; background: var(--tinta); }
+/* Planejamento: uma barra por fonte, com o valor previsto */
+.fonte-linha.plan { grid-template-columns: 230px 1fr 150px; padding: 6px 0; }
+.fonte-plan { position: absolute; left: 0; top: 2px; bottom: 2px; border-radius: 0 4px 4px 0;
+  background: repeating-linear-gradient(135deg, #D9DFE8 0 6px, #BCC6D4 6px 12px); }
+.fonte-linha.total { border-top: 2px solid var(--tinta); border-bottom: 0; margin-top: 2px; padding-top: 10px; }
+.fonte-linha.total .fonte-barra { height: 0; }
 .obj-sub .miudo, .miudo { font-size: 11px; color: var(--tinta-2); }
 @media (max-width: 700px) {
-  .fonte-linha { grid-template-columns: 1fr auto; }
+  .fonte-linha, .fonte-linha.plan { grid-template-columns: 1fr auto; }
   .fonte-barra { grid-column: 1 / -1; grid-row: 2; }
 }
+@media print { .dica { display: none !important; } }
 
 /* ============ 11. RELATÓRIO EM PDF ============
    O relatório é montado pelo JavaScript em #relatorio, com o tamanho exato de uma folha A4 deitada.
@@ -289,7 +311,11 @@ details.detalhes .rolagem { margin-top: 10px; }
 #relatorio .eixo-nome small { display: inline; font-size: 10px; margin-left: 6px; }
 #relatorio .eixo-trilho { height: 13px; }
 #relatorio .eixo-valor { font-size: 14px; }
-#relatorio .fonte-linha { grid-template-columns: 230px 1fr 120px; gap: 12px; padding: 2px 0; }
+#relatorio .rel-fontes { display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px; align-items: start; }
+#relatorio .fonte-linha { grid-template-columns: 200px 1fr 112px; gap: 10px; padding: 2px 0; }
+#relatorio .fonte-linha.plan { grid-template-columns: 150px 1fr 92px; padding: 2px 0; }
+#relatorio .fonte-linha.total { padding-top: 4px; }
+#relatorio .fonte-marco { top: -2px; bottom: -2px; }
 #relatorio .fonte-linha.separa { margin-top: 2px; }
 #relatorio .fonte-nome { font-size: 11.5px; line-height: 1.2; }
 #relatorio .fonte-nome small { font-size: 9.5px; }
@@ -345,20 +371,25 @@ details.detalhes .rolagem { margin-top: 10px; }
 
     <section class="painel" aria-labelledby="t-eixos">
       <h2 id="t-eixos">Valor por eixo temático</h2>
-      <p class="descricao">Soma dos valores de cada eixo, dividida por fase</p>
-      <div id="eixos"></div>
+      <p class="descricao">Soma dos valores de cada eixo, dividida por fase. Passe o mouse sobre um eixo para ver as obras.</p>
+      <div id="eixos" class="eixos-grafico"></div>
     </section>
   </div>
 
   <section class="painel" aria-labelledby="t-fontes" style="margin-bottom:20px">
     <h2 id="t-fontes">Fontes de recurso</h2>
-    <p class="descricao">Recurso previsto em cada fonte do programa e quanto já está comprometido em objetos</p>
-    <div id="fontes"></div>
-    <details class="detalhes">
-      <summary>Ver valores por fase</summary>
-      <div class="rolagem"><table class="tabela-fontes" id="tabela-fontes"></table></div>
-    </details>
-    <p class="nota">Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, até que a divisão real seja apontada.</p>
+    <p class="descricao">Como está cada fonte hoje e o que foi planejado para o programa</p>
+    <div class="fontes-bloco">
+      <h3>Situação real</h3>
+      <p class="descricao">Valor já comprometido em objetos em cada fonte, por fase, comparado ao recurso previsto</p>
+      <div id="fontes"></div>
+      <p class="nota">Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, salvo quando a divisão é informada.</p>
+    </div>
+    <div class="fontes-bloco">
+      <h3>Planejamento Avança Uberlândia</h3>
+      <p class="descricao">Recurso previsto para cada fonte na projeção oficial do programa</p>
+      <div id="planejamento-fontes"></div>
+    </div>
   </section>
 
   <section class="painel" id="secao-objetos" aria-labelledby="t-objetos">
@@ -380,7 +411,8 @@ details.detalhes .rolagem { margin-top: 10px; }
       <li>Contratado é o valor original do contrato. Os aditivos aparecem como um item à parte em cada fase.</li>
       <li>Em licitação e em planejamento usam o valor estimado.</li>
       <li>O total do programa é o valor anunciado pela Prefeitura.</li>
-      <li>Dotações que não estão entre as fontes oficiais aparecem como "Outros".</li>
+      <li>O recurso previsto de cada fonte segue a projeção oficial do programa.</li>
+      <li>Dotações que não estão entre as fontes da projeção oficial aparecem como "Outros".</li>
     </ul>
   </footer>
 </div>
@@ -419,20 +451,29 @@ if (CONFIG.aviso_no_topo) {
   aviso.hidden = false;
 }
 
+// Quanto de um valor do objeto cabe a cada fonte: a divisão informada no config.json ou partes iguais
+function repartir(o, valor) {
+  if (o.divisao && o.divisao.length) {
+    const base = o.divisao.reduce((s, d) => s + d.valor, 0) || 1;
+    return o.divisao.map(d => ({ fonte: d.fonte, valor: valor * d.valor / base }));
+  }
+  return o.fontes.map(f => ({ fonte: f, valor: valor / o.fontes.length }));
+}
+
 // "Partes" de cada objeto: quanto de cada fonte vai para cada eixo
 DADOS.objetos.forEach(o => {
   if (!EIXOS.includes(o.eixo)) o.eixo = OUTROS;
   o.fontes = o.fontes && o.fontes.length ? o.fontes : [NAO_INFORMADA];
   o.outros = o.outros || [];
   o.dotacao = o.dotacao || [];
-  o.partes = o.fontes.map(f => ({ eixo: o.eixo, fonte: f, valor: o.valor / o.fontes.length }));
+  o.partes = repartir(o, o.valor).map(p => ({ eixo: o.eixo, ...p }));
 });
 
 // Aditivos: o valor de cada obra é o contratado original; os aditivos viram um item à parte na lista
 [['andamento', 'Aditivos de obras em andamento', 'Em andamento'], ['concluida', 'Aditivos de obras concluídas', 'Concluída']].forEach(([fase, rotulo, situacao]) => {
   const obras = DADOS.objetos.filter(o => o.status === fase && !o.sintetico && o.aditivo > 0);
   if (!obras.length) return;
-  const partes = obras.flatMap(o => o.fontes.map(f => ({ eixo: o.eixo, fonte: f, valor: o.aditivo / o.fontes.length })));
+  const partes = obras.flatMap(o => repartir(o, o.aditivo).map(p => ({ eixo: o.eixo, ...p })));
   const porFonte = {};
   partes.forEach(p => porFonte[p.fonte] = (porFonte[p.fonte] || 0) + p.valor);
   DADOS.objetos.push({
@@ -590,56 +631,144 @@ function htmlEixos() {
   const lista = resumoEixos().filter(e => e.qtd > 0 || e.total > 0);   // eixo sem objeto não aparece no gráfico
   const maior = Math.max(...lista.map(e => e.total), 1);
   return chavesFases() + lista.map(e => `
-    <div class="eixo">
+    <div class="eixo" data-eixo="${esc(e.nome)}" tabindex="0" aria-describedby="dica-eixo">
       <div class="eixo-nome">${esc(e.nome)}<small>${plural(e.qtd, 'objeto', 'objetos')}</small></div>
-      <div class="eixo-trilho">${FASES.map(f => e.fases[f.id] ? `<span style="width:${e.fases[f.id] / maior * 100}%;background:${f.cor}" title="${f.nome}: ${reaisCompleto(e.fases[f.id])}"></span>` : '').join('')}</div>
+      <div class="eixo-trilho">${FASES.map(f => e.fases[f.id] ? `<span style="width:${e.fases[f.id] / maior * 100}%;background:${f.cor}"></span>` : '').join('')}</div>
       <div class="eixo-valor">${e.total ? reais(e.total) : '<span class="situacao">sem valor</span>'}</div>
     </div>`).join('');
 }
 
+/* Dica do gráfico de eixos: ao passar o mouse (ou tocar) num eixo, lista as obras dele por fase.
+   Os nomes entram como texto puro (textContent), nunca como HTML. */
+const dica = document.createElement('div');
+dica.className = 'dica'; dica.id = 'dica-eixo'; dica.setAttribute('role', 'tooltip'); dica.hidden = true;
+document.body.appendChild(dica);
+let linhaAtiva = null;
+function preencherDica(eixo) {
+  const titulo = document.createElement('strong');
+  titulo.textContent = eixo;
+  dica.replaceChildren(titulo);
+  FASES.forEach(f => {
+    const lista = ordenarPorValor(obras.filter(o => o.eixo === eixo && o.status === f.id));
+    if (!lista.length) return;
+    const fase = document.createElement('div'), chave = document.createElement('i'), ul = document.createElement('ul');
+    fase.className = 'dica-fase'; chave.style.background = f.cor;
+    fase.append(chave, `${f.nome} (${lista.length})`);
+    lista.forEach(o => { const li = document.createElement('li'); li.textContent = o.nome; ul.appendChild(li); });
+    dica.append(fase, ul);
+  });
+}
+function posicionarDica(x, y) {
+  const m = 12, r = dica.getBoundingClientRect();
+  let esq = x + 18, topo = y + 14;
+  if (esq + r.width > innerWidth - m) esq = Math.max(m, x - r.width - 18);
+  if (topo + r.height > innerHeight - m) topo = Math.max(m, innerHeight - r.height - m);
+  dica.style.left = esq + 'px'; dica.style.top = topo + 'px';
+}
+function mostrarDica(linha, x, y) {
+  if (linhaAtiva !== linha) {
+    esconderDica();
+    linhaAtiva = linha;
+    preencherDica(linha.dataset.eixo);
+    linha.classList.add('ativo');
+    linha.parentElement.classList.add('focando');
+    dica.hidden = false;
+  }
+  posicionarDica(x, y);
+}
+function esconderDica() {
+  if (!linhaAtiva) return;
+  linhaAtiva.classList.remove('ativo');
+  linhaAtiva.parentElement.classList.remove('focando');
+  linhaAtiva = null;
+  dica.hidden = true;
+}
+function ligarDicasEixos(alvo) {
+  const toque = matchMedia('(hover: none)').matches;
+  const pertoDaLinha = linha => { const r = linha.getBoundingClientRect(); return [Math.min(r.left + 200, innerWidth / 2), r.bottom - 6]; };
+  alvo.querySelectorAll('.eixo[data-eixo]').forEach(linha => {
+    linha.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') mostrarDica(linha, e.clientX, e.clientY); });
+    linha.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') esconderDica(); });
+    linha.addEventListener('focus', () => { if (!toque && linhaAtiva !== linha) mostrarDica(linha, ...pertoDaLinha(linha)); });
+    linha.addEventListener('blur', esconderDica);
+    linha.addEventListener('click', e => {
+      if (!toque) return;
+      e.stopPropagation();
+      if (linhaAtiva === linha) esconderDica(); else mostrarDica(linha, ...pertoDaLinha(linha));
+    });
+  });
+  document.addEventListener('click', esconderDica);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') esconderDica(); });
+  addEventListener('scroll', esconderDica, { passive: true });
+}
+
 /* ============ Fontes de recurso (tela e PDF) ============ */
+// Ordem das linhas: fontes da projeção oficial (da maior para a menor), depois o que não está nela
+const ORDEM_FONTES = [...new Set([...FONTES_OFICIAIS.slice().sort((a, b) => b.disponivel - a.disponivel).map(f => f.nome), OUTROS, NAO_INFORMADA])];
+const TOTAL_PREVISTO = FONTES_OFICIAIS.reduce((s, f) => s + f.disponivel, 0);
 function resumoFontes() {
   const linhas = {};
   const linha = nome => linhas[nome] ??= { nome, disponivel: null, concluida: 0, andamento: 0, licitacao: 0, planejamento: 0, outros: new Set() };
   FONTES_OFICIAIS.forEach(f => Object.assign(linha(f.nome), { disponivel: f.disponivel, obs: f.obs, nota: f.nota, oficial: true }));
-  linha(OUTROS); linha(NAO_INFORMADA);
+  ORDEM_FONTES.forEach(linha);
   objetos.forEach(o => o.partes.forEach(p => {
     linha(p.fonte)[o.status] += p.valor;
     if (p.fonte === OUTROS) o.outros.forEach(n => linhas[OUTROS].outros.add(n));
   }));
-  return [...FONTES_OFICIAIS.map(f => linhas[f.nome]), linhas[OUTROS], linhas[NAO_INFORMADA]].map(l => ({
+  const ordem = [...new Set([...ORDEM_FONTES, ...Object.keys(linhas)])];
+  return ordem.map(n => linhas[n]).map(l => ({
     ...l, contratado: l.concluida + l.andamento, comprometido: l.concluida + l.andamento + l.licitacao + l.planejamento,
-  }));
+  })).filter(l => l.oficial || l.comprometido > 0);   // fonte fora da projeção só aparece se tiver valor
 }
+// Escala comum aos dois gráficos (situação real e planejamento), para os tamanhos serem comparáveis
+const escalaFontes = linhas => Math.max(...linhas.map(l => Math.max(l.disponivel || 0, l.comprometido)), 1);
+
+// Situação real: comprometido por fase sobre o previsto (listrado), com um traço marcando o previsto
 function htmlFontes() {
-  const linhas = resumoFontes();
-  const escala = Math.max(...linhas.map(l => Math.max(l.disponivel || 0, l.comprometido)));
-  const chaves = `<div class="chaves">${FASES.map(f => `<span><i style="background:${f.cor}"></i>${f.rotuloValor}</span>`).join('')}<span><i class="saldo"></i>Saldo previsto</span></div>`;
+  const linhas = resumoFontes(), escala = escalaFontes(linhas);
+  const chaves = `<div class="chaves">${FASES.map(f => `<span><i style="background:${f.cor}"></i>${f.rotuloValor}</span>`).join('')}`
+    + `<span><i class="saldo"></i><i class="marco"></i>Recurso previsto</span></div>`;
+  let separou = false;
   return chaves + linhas.map(l => {
     const nome = l.nome === NAO_INFORMADA ? 'Fonte não informada' : l.nome;
-    const sub = l.oficial ? `${milhoes(l.disponivel)} previstos${l.obs ? `<span class="obs"> (${l.obs})</span>` : ''}${l.nota ? `<span class="miudo nota-fonte">${esc(l.nota)}</span>` : ''}`
-      : l.nome === OUTROS ? `<span class="miudo">${esc([...l.outros].sort().join(', ')) || 'nenhuma'}</span>` : 'dotação não apontada';
+    const inclui = [...l.outros].sort((a, b) => a.localeCompare(b, 'pt-BR')).join(', ');
+    let sub;
+    if (l.oficial) {
+      sub = `${milhoes(l.disponivel)} previstos`
+        + (l.nome === OUTROS ? (inclui ? `<span class="miudo nota-fonte">Hoje inclui: ${esc(inclui)}</span>` : '')
+                             : (l.obs ? `<span class="obs"> · ${esc(l.obs)}</span>` : ''))
+        + (l.nota ? `<span class="miudo nota-fonte">${esc(l.nota)}</span>` : '');
+    } else {
+      sub = l.nome === OUTROS ? `<span class="miudo">${esc(inclui)}</span>` : 'dotação não apontada';
+    }
     const segs = FASES.map(f => l[f.id] ? `<span style="width:${l[f.id] / escala * 100}%;background:${f.cor}" title="${f.rotuloValor}: ${reaisCompleto(l[f.id])}"></span>` : '').join('');
-    const valor = l.oficial
-      ? `${reaisOuZero(l.contratado)}<small>contratado (${pct(l.contratado, l.disponivel)})</small>`
-      : `${reaisOuZero(l.contratado)}<small>contratado</small>`;
-    return `<div class="fonte-linha${l.nome === OUTROS ? ' separa' : ''}">
+    const acima = l.disponivel && l.comprometido > l.disponivel;
+    const detalhe = !l.disponivel ? (l.comprometido ? 'comprometido' : '')
+      : !l.comprometido ? 'nenhum objeto ainda'
+      : acima ? `<small class="acima">▲ ${pct(l.comprometido, l.disponivel)} do previsto</small>`
+      : `${pct(l.comprometido, l.disponivel)} do previsto`;
+    const separa = !l.oficial && !separou ? (separou = true, ' separa') : '';
+    return `<div class="fonte-linha${separa}">
       <div class="fonte-nome${l.oficial ? '' : ' indefinido'}">${esc(nome)}<small>${sub}</small></div>
-      <div class="fonte-barra">${l.disponivel ? `<div class="fonte-disp" style="width:${l.disponivel / escala * 100}%" title="Previsto: ${reaisCompleto(l.disponivel)}"></div>` : ''}<div class="fonte-segs">${segs}</div></div>
-      <div class="fonte-valor">${valor}</div></div>`;
+      <div class="fonte-barra">${l.disponivel ? `<div class="fonte-disp" style="width:${l.disponivel / escala * 100}%" title="Previsto: ${reaisCompleto(l.disponivel)}"></div>` : ''}<div class="fonte-segs">${segs}</div>${l.disponivel ? `<div class="fonte-marco" style="left:${l.disponivel / escala * 100}%"></div>` : ''}</div>
+      <div class="fonte-valor">${reaisOuZero(l.comprometido)}${detalhe.startsWith('<small') ? detalhe : `<small>${detalhe}</small>`}</div></div>`;
   }).join('');
+}
+
+// Planejamento Avança Uberlândia: o previsto de cada fonte na projeção oficial
+function htmlPlanejamento() {
+  const escala = escalaFontes(resumoFontes());
+  const linhas = FONTES_OFICIAIS.slice().sort((a, b) => b.disponivel - a.disponivel);
+  return linhas.map(f => `<div class="fonte-linha plan">
+      <div class="fonte-nome">${esc(f.nome)}${f.obs ? `<small>${esc(f.obs)}</small>` : ''}</div>
+      <div class="fonte-barra"><div class="fonte-plan" style="width:${f.disponivel / escala * 100}%" title="Previsto: ${reaisCompleto(f.disponivel)}"></div></div>
+      <div class="fonte-valor">${milhoes(f.disponivel)}<small>${pct(f.disponivel, TOTAL_PREVISTO)} do total</small></div></div>`).join('')
+    + `<div class="fonte-linha plan total"><div class="fonte-nome">Total previsto</div><div class="fonte-barra"></div>
+      <div class="fonte-valor">R$ ${dec(TOTAL_PREVISTO / 1e9, 2)} bi<small>${reaisCompleto(TOTAL_PREVISTO)}</small></div></div>`;
 }
 function montarFontes() {
   document.getElementById('fontes').innerHTML = htmlFontes();
-  const linhas = resumoFontes();
-  const tot = k => linhas.reduce((s, l) => s + (l[k] || 0), 0);
-  const saldo = l => l.disponivel ? l.disponivel - l.comprometido : null;
-  const td = v => `<td class="num">${v == null ? '' : reais(v)}</td>`;
-  document.getElementById('tabela-fontes').innerHTML = `
-    <thead><tr><th>Fonte</th><th class="num">Previsto</th><th class="num">Contratado</th><th class="num">Em licitação</th><th class="num">Em planejamento</th><th class="num">Saldo não comprometido</th></tr></thead>
-    <tbody>${linhas.map(l => `<tr><td${l.oficial ? '' : ' class="indefinido"'}>${l.nome === NAO_INFORMADA ? 'Fonte não informada' : esc(l.nome)}</td>
-      ${td(l.disponivel)}${td(l.contratado)}${td(l.licitacao)}${td(l.planejamento)}${td(saldo(l))}</tr>`).join('')}</tbody>
-    <tfoot><tr><td>Total</td>${td(tot('disponivel'))}${td(tot('contratado'))}${td(tot('licitacao'))}${td(tot('planejamento'))}${td(linhas.reduce((s, l) => s + (saldo(l) || 0), 0))}</tr></tfoot>`;
+  document.getElementById('planejamento-fontes').innerHTML = htmlPlanejamento();
 }
 
 /* ============ Tabela de objetos (abas, filtro e busca) ============ */
@@ -788,8 +917,11 @@ function montarRelatorio() {
   const folha2 = `<section class="folha">
     ${topo('Eixos temáticos e fontes de recurso', 2)}
     <div class="rel-cartao rel-grafico"><h2>Eixos temáticos</h2><p class="descricao">Valor de cada eixo, dividido por fase</p>${htmlEixos()}</div>
-    <div class="rel-cartao rel-grafico"><h2>Fontes de recurso</h2><p class="descricao">Contratado, em licitação e em planejamento em cada fonte, sobre o recurso previsto</p>${htmlFontes()}</div>
-    <p class="rel-nota">Em licitação e em planejamento, valor estimado. Objetos com mais de uma fonte têm o valor dividido igualmente entre elas.</p>
+    <div class="rel-fontes">
+      <div class="rel-cartao rel-grafico"><h2>Fontes de recurso: situação real</h2><p class="descricao">Valor já comprometido em objetos em cada fonte, por fase, comparado ao recurso previsto</p>${htmlFontes()}</div>
+      <div class="rel-cartao rel-grafico"><h2>Planejamento Avança Uberlândia</h2><p class="descricao">Recurso previsto para cada fonte na projeção oficial</p>${htmlPlanejamento()}</div>
+    </div>
+    <p class="rel-nota">Em licitação e em planejamento, valor estimado. Objetos com mais de uma fonte têm o valor dividido igualmente entre elas, salvo quando a divisão é informada.</p>
   </section>`;
 
   document.getElementById('relatorio').innerHTML = folha1 + folha2;
@@ -970,21 +1102,28 @@ function abasDoRelatorio() {
   const vazio = (v = '') => ({ v, s: 'texto' });
 
   /* ----- Aba Base (alimenta os filtros do Resumo) ----- */
-  // Colunas: A Objeto, B Tipo, C Fase, D Eixo, E Fontes, F "Todas as fontes", G em diante uma coluna por fonte; S lista de eixos
-  const colunasFonte = ['Todas as fontes', ...FONTES_OFICIAIS.map(f => f.nome), OUTROS, NAO_INFORMADA];
+  // Colunas: A Objeto, B Tipo, C Fase, D Eixo, E Fontes, F "Todas as fontes", G em diante uma coluna por fonte;
+  // depois de uma coluna vazia, a lista de eixos (usada no filtro do Resumo)
+  const colunasFonte = ['Todas as fontes', ...ORDEM_FONTES];
   const colDaFonte = nome => L(5 + colunasFonte.indexOf(nome));
   const ultimaCol = L(4 + colunasFonte.length);
-  const linhaBase = (nome, tipo, fase, eixo, fontes, valor) => [vazio(nome), vazio(tipo), vazio(fase), vazio(eixo), vazio(';' + fontes.join(';') + ';'),
-    { v: valor, s: 'moeda' }, ...colunasFonte.slice(1).map(f => ({ v: fontes.includes(f) ? valor / fontes.length : 0, s: 'moeda' }))];
-  const B = [banda('Base de dados do Resumo', 5 + colunasFonte.length), [{ v: periodo, s: 'nota' }], [],
-    [...cabecalho(['Objeto', 'Tipo', 'Fase', 'Eixo', 'Fontes', ...colunasFonte], colunasFonte.map((_, k) => 5 + k)), null, null, { v: 'Lista de eixos', s: 'cabecalho' }]];
+  const colEixos = 5 + colunasFonte.length + 1, letraEixos = L(colEixos);
+  const linhaBase = (nome, tipo, fase, o, valor) => {
+    const partes = repartir(o, valor);
+    return [vazio(nome), vazio(tipo), vazio(fase), vazio(o.eixo), vazio(';' + o.fontes.join(';') + ';'), { v: valor, s: 'moeda' },
+      ...colunasFonte.slice(1).map(f => ({ v: partes.filter(p => p.fonte === f).reduce((s, p) => s + p.valor, 0), s: 'moeda' }))];
+  };
+  const cabBase = cabecalho(['Objeto', 'Tipo', 'Fase', 'Eixo', 'Fontes', ...colunasFonte], colunasFonte.map((_, k) => 5 + k));
+  while (cabBase.length < colEixos) cabBase.push(null);
+  cabBase[colEixos] = { v: 'Lista de eixos', s: 'cabecalho' };
+  const B = [banda('Base de dados do Resumo', 5 + colunasFonte.length), [{ v: periodo, s: 'nota' }], [], cabBase];
   ['concluida', 'andamento', 'licitacao', 'planejamento'].flatMap(id => ordenarPorValor(porFase(id))).filter(o => !o.sintetico)
-    .forEach(o => B.push(linhaBase(o.nome, 'Objeto', nomeFase(o.status), o.eixo, o.fontes, o.valor)));
+    .forEach(o => B.push(linhaBase(o.nome, 'Objeto', nomeFase(o.status), o, o.valor)));
   obras.filter(o => (o.status === 'andamento' || o.status === 'concluida') && o.aditivo > 0)
-    .forEach(o => B.push(linhaBase('Aditivo: ' + o.nome, 'Aditivo', nomeFase(o.status), o.eixo, o.fontes, o.aditivo)));
+    .forEach(o => B.push(linhaBase('Aditivo: ' + o.nome, 'Aditivo', nomeFase(o.status), o, o.aditivo)));
   const ultima = Math.max(B.length, 5);
   while (B.length < 5 + EIXOS.length) B.push([]);
-  ['Todos os eixos', ...EIXOS].forEach((e, k) => { const r = 4 + k; while (B[r].length < 18) B[r].push(null); B[r][18] = vazio(e); });
+  ['Todos os eixos', ...EIXOS].forEach((e, k) => { const r = 4 + k; while (B[r].length < colEixos) B[r].push(null); B[r][colEixos] = vazio(e); });
   const nomes = [
     ['Base_Tipo', `Base!$B$5:$B$${ultima}`], ['Base_Fase', `Base!$C$5:$C$${ultima}`], ['Base_Eixo', `Base!$D$5:$D$${ultima}`],
     ['Base_Fontes', `Base!$E$5:$E$${ultima}`], ['Base_Valores', `Base!$F$5:$${ultimaCol}$${ultima}`],
@@ -1020,20 +1159,23 @@ function abasDoRelatorio() {
 
   // Fontes de recurso (usa só o filtro de eixo)
   add([{ v: 'Fontes de recurso', s: 'subtitulo' }]);
-  alturas[add(cabecalho(['Fonte', 'Previsto', 'Contratado', 'Em licitação', 'Em planejamento', 'Saldo não comprometido', '% contratado'], [1, 2, 3, 4, 5, 6]))] = 30;
+  alturas[add(cabecalho(['Fonte', 'Previsto', 'Contratado', 'Em licitação', 'Em planejamento', 'Saldo não comprometido', '% comprometido'], [1, 2, 3, 4, 5, 6]))] = 30;
   const iniFonte = R.length + 1;
   const somaFase = (nome, fases) => fases.map(f => `SUMIFS(${colBase(nome)},Base_Fase,"${nomeFase(f)}",Base_Eixo,${eixoCrit})`).join('+');
-  [...FONTES_OFICIAIS, { nome: OUTROS }, { nome: NAO_INFORMADA }].forEach(f => {
+  // Fontes da projeção oficial primeiro (com previsto), depois as demais
+  const fontesResumo = ORDEM_FONTES.map(nome => FONTES_OFICIAIS.find(f => f.nome === nome) || { nome });
+  fontesResumo.forEach(f => {
     const r = R.length + 1, oficial = f.disponivel != null;
     add([vazio(f.nome === NAO_INFORMADA ? 'Fonte não informada' : f.nome), oficial ? { v: f.disponivel, s: 'moeda' } : { v: '', s: 'moeda' },
       { f: somaFase(f.nome, ['andamento', 'concluida']), s: 'moeda' }, { f: somaFase(f.nome, ['licitacao']), s: 'moeda' }, { f: somaFase(f.nome, ['planejamento']), s: 'moeda' },
       oficial ? { f: `IF($B$5="Todos os eixos",B${r}-SUM(C${r}:E${r}),"")`, s: 'moeda' } : { v: '', s: 'moeda' },
-      oficial ? { f: `IF(AND($B$5="Todos os eixos",B${r}>0),C${r}/B${r},"")`, s: 'pct' } : { v: '', s: 'pct' }]);
+      oficial ? { f: `IF(AND($B$5="Todos os eixos",B${r}>0),SUM(C${r}:E${r})/B${r},"")`, s: 'pct' } : { v: '', s: 'pct' }]);
   });
-  const fimOficial = iniFonte + FONTES_OFICIAIS.length - 1, fimFonte = R.length, totFonte = fimFonte + 1;
+  const nOficiais = fontesResumo.filter(f => f.disponivel != null).length;
+  const fimOficial = iniFonte + nOficiais - 1, fimFonte = R.length, totFonte = fimFonte + 1;
   add([{ v: 'Total', s: 'totalTexto' }, ...['B', 'C', 'D', 'E'].map(c => ({ f: `SUM(${c}${iniFonte}:${c}${fimFonte})`, s: 'totalMoeda' })),
     { f: `IF($B$5="Todos os eixos",SUM(F${iniFonte}:F${fimOficial}),"")`, s: 'totalMoeda' },
-    { f: `IF(AND($B$5="Todos os eixos",B${totFonte}>0),SUM(C${iniFonte}:C${fimOficial})/B${totFonte},"")`, s: 'totalPct' }]);
+    { f: `IF(AND($B$5="Todos os eixos",B${totFonte}>0),SUM(C${iniFonte}:E${fimOficial})/B${totFonte},"")`, s: 'totalPct' }]);
   const barrasResumo = [`G${iniFonte}:G${fimOficial}`];
   add([]);
 
@@ -1088,7 +1230,7 @@ function abasDoRelatorio() {
 
   return { nomes, abas: [
     { nome: 'Resumo', cor: 'FF16213E', larguras: [40, 20, 18, 18, 18, 20, 14], linhas: R, mesclar, alturas, barras: barrasResumo,
-      listas: [{ ref: 'B5:C5', origem: `Base!$S$5:$S$${5 + EIXOS.length}` }, { ref: 'B6:C6', origem: `Base!$F$4:$${ultimaCol}$4` }] },
+      listas: [{ ref: 'B5:C5', origem: `Base!$${letraEixos}$5:$${letraEixos}$${5 + EIXOS.length}` }, { ref: 'B6:C6', origem: `Base!$F$4:$${ultimaCol}$4` }] },
     aba('Em andamento', 'FF2F6FA3', 'Obras em andamento',
       ['Objeto', 'Processo', 'Empresa', 'Eixo', 'Valor contratado', 'Início (OS)', 'Previsão de fim', 'Avanço físico', 'Situação', 'Fonte', 'Dotação orçamentária', 'Local', 'Mapa', 'Prioritário'],
       [44, 13, 30, 24, 17, 12, 16, 12, 20, 26, 26, 34, 12, 11], porFase('andamento'),
@@ -1110,7 +1252,7 @@ function abasDoRelatorio() {
             vazio(fonteTxt(o)), vazio(o.dotacao.join(', ')), vazio(localTxt(o)), mapa(o), sim(o.prioridade)], [2], [2]),
     aba('Concluídas', 'FF2E9E6A', 'Obras concluídas', ['Objeto', 'Eixo', 'Valor', 'Conclusão', 'Fonte', 'Local'], [48, 22, 17, 16, 28, 34], porFase('concluida'),
       o => [vazio(o.nome), vazio(o.eixo), { v: o.valor, s: 'moeda' }, { v: o.conclusao || o.termino || '', s: 'mes' }, vazio(fonteTxt(o)), vazio(localTxt(o))], [2], [2]),
-    { nome: 'Base', cor: 'FFB8C2D0', larguras: [44, 10, 16, 24, 30, ...colunasFonte.map(() => 16), 3, 3, 30], linhas: B, congelar: 4,
+    { nome: 'Base', cor: 'FFB8C2D0', larguras: [44, 10, 16, 24, 30, ...colunasFonte.map(() => 16), 3, 30], linhas: B, congelar: 4,
       mesclar: [`A1:${ultimaCol}1`, `A2:${ultimaCol}2`], alturas: { 1: 28, 4: 30 }, filtro: `A4:${ultimaCol}${ultima}`, zebra: [`A5:${ultimaCol}${ultima}`] },
   ] };
 }
@@ -1130,6 +1272,7 @@ montarRegua();
 montarStatus();
 montarEntregas();
 document.getElementById('eixos').innerHTML = htmlEixos();
+ligarDicasEixos(document.getElementById('eixos'));
 montarFontes();
 montarControles();
 montarTabela();
